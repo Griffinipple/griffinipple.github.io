@@ -1,5 +1,8 @@
 let scene, camera, renderer;
 let platform, ramp, block;
+let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
 function init() {
     // Create a new scene
@@ -7,7 +10,7 @@ function init() {
 
     // Create a camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 5, 10);
+    camera.position.set(0, 1.5, 5);
     camera.lookAt(0, 0, 0);
 
     // Create a renderer and append it to the document
@@ -43,6 +46,8 @@ function init() {
     });
     document.addEventListener('pointerlockchange', lockChangeAlert, false);
     document.addEventListener('mousemove', updateCameraDirection, false);
+    document.addEventListener('keydown', onKeyDown, false);
+    document.addEventListener('keyup', onKeyUp, false);
 
     // Start the animation loop
     animate();
@@ -64,10 +69,52 @@ function updateCameraDirection(event) {
     }
 }
 
+function onKeyDown(event) {
+    switch (event.code) {
+        case 'KeyW':
+            moveForward = true;
+            break;
+        case 'KeyS':
+            moveBackward = true;
+            break;
+        case 'KeyA':
+            moveLeft = true;
+            break;
+        case 'KeyD':
+            moveRight = true;
+            break;
+    }
+}
+
+function onKeyUp(event) {
+    switch (event.code) {
+        case 'KeyW':
+            moveForward = false;
+            break;
+        case 'KeyS':
+            moveBackward = false;
+            break;
+        case 'KeyA':
+            moveLeft = false;
+            break;
+        case 'KeyD':
+            moveRight = false;
+            break;
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
-    // Update game state if necessary
+    // Update movement
+    direction.z = Number(moveForward) - Number(moveBackward);
+    direction.x = Number(moveRight) - Number(moveLeft);
+    direction.normalize(); // this ensures consistent movement in all directions
+
+    if (moveForward || moveBackward) velocity.z -= direction.z * 0.1;
+    if (moveLeft || moveRight) velocity.x -= direction.x * 0.1;
+
+    camera.position.add(velocity);
 
     // Render the scene
     renderer.render(scene, camera);
