@@ -15,13 +15,14 @@ const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 let prevTime = performance.now();
 
+// Initialize camera first since controls needs it
+camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+controls = new THREE.PointerLockControls(camera, document.body);
+
 function init() {
     // Create a new scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xcce0ff);
-
-    // Create a camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
     // Create a renderer and append it to the document
     renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas') });
@@ -37,7 +38,6 @@ function init() {
     scene.add(directionalLight);
 
     // Add PointerLockControls
-    controls = new THREE.PointerLockControls(camera, document.body);
     scene.add(controls.getObject());
 
     // Create the ground
