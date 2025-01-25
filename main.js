@@ -41,10 +41,6 @@ function init() {
     controls = new THREE.PointerLockControls(camera, document.body);
     scene.add(controls.getObject());
 
-    // Setting up the blocker and instructions
-    const blocker = document.getElementById('blocker');
-    const instructions = document.getElementById('instructions');
-
     // Create the ground
     const floorGeometry = new THREE.PlaneGeometry(200, 200);
     const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
@@ -90,6 +86,9 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
     // Event listeners for instructions overlay
+    const blocker = document.getElementById('blocker');
+    const instructions = document.getElementById('instructions');
+
     if (instructions) {
         instructions.addEventListener('click', function () {
             controls.lock();
