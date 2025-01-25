@@ -51,20 +51,6 @@ function init() {
     const blocker = document.getElementById('blocker');
     const instructions = document.getElementById('instructions');
 
-    instructions.addEventListener('click', function () {
-        controls.lock();
-    }, false);
-
-    controls.addEventListener('lock', function () {
-        instructions.style.display = 'none';
-        blocker.style.display = 'none';
-    });
-
-    controls.addEventListener('unlock', function () {
-        blocker.style.display = 'block';
-        instructions.style.display = '';
-    });
-
     // Create the ground
     const floorGeometry = new THREE.PlaneGeometry(200, 200);
     const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
@@ -108,6 +94,29 @@ function init() {
 
     // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
+
+    // Setup play button functionality
+    document.getElementById('play-button').addEventListener('click', () => {
+        document.getElementById('play-button').style.display = 'none';
+        blocker.style.display = 'block';
+        instructions.style.display = 'block';
+        controls.lock();
+    });
+
+    // Event listeners for instructions overlay
+    instructions.addEventListener('click', function () {
+        controls.lock();
+    }, false);
+
+    controls.addEventListener('lock', function () {
+        instructions.style.display = 'none';
+        blocker.style.display = 'none';
+    });
+
+    controls.addEventListener('unlock', function () {
+        blocker.style.display = 'block';
+        instructions.style.display = '';
+    });
 
     // Start the animation loop
     animate();

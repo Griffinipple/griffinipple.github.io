@@ -22,6 +22,7 @@ canvas#gameCanvas {
 }
 
 #blocker {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -50,4 +51,15 @@ canvas#gameCanvas {
 #instructions .note {
     font-size: 16px;
     opacity: 0.7;
+}
+
+#play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 200; /* Ensure it appears above other elements */
 }
