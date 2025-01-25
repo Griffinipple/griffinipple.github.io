@@ -1,0 +1,27 @@
+{
+  "name": "web-3d-game",
+  "version": "1.0.0",
+  "description": "A web-based 3D game project using JavaScript.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "live-server src",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "three": "^0.132.2",
+    "dat.gui": "^0.7.6"
+  },
+  "devDependencies": {
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "live-server": "^1.2.1"
+  },
+  "keywords": [
+    "3D",
+    "game",
+    "javascript",
+    "web"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
