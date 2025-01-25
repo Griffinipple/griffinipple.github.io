@@ -4,29 +4,43 @@ let camera, scene, renderer;
 let controls;
 let objects = [];
 let raycaster;
-
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 let canJump = false;
+let velocity, direction, prevTime;
+let animationFrameId;
 
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
-let prevTime = performance.now();
-
-// Initialize camera first since controls needs it
-camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-controls = new THREE.PointerLockControls(camera, document.body);
+function initializeVariables() {
+    velocity = new THREE.Vector3();
+    direction = new THREE.Vector3();
+    prevTime = performance.now();
+    
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.y = 1.5; // Set initial camera height
+    controls = new THREE.PointerLockControls(camera, document.body);
+}
 
 function init() {
+    if (!THREE.WebGLRenderer.isWebGLAvailable()) {
+        const warning = THREE.WebGLRenderer.getWebGLErrorMessage();
+        document.getElementById('game-container').appendChild(warning);
+        return;
+    }
+    
     // Create a new scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xcce0ff);
 
     // Create a renderer and append it to the document
-    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas') });
+    renderer = new THREE.WebGLRenderer({ 
+        canvas: document.getElementById('gameCanvas'),
+        antialias: true 
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xcce0ff);
 
     // Add lights
     const light = new THREE.HemisphereLight(0xffffff, 0x444444);
@@ -149,7 +163,7 @@ function onKeyUp(event) {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
 
     if (controls.isLocked === true) {
         const time = performance.now();
@@ -269,9 +283,16 @@ function checkCollisions() {
     }
 }
 
+// Add cleanup for animation frame
+function stopAnimation() {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+    }
+}
+
 // Wait for the DOM to fully load before initializing the game
 window.addEventListener('DOMContentLoaded', () => {
-    // Get elements and add event listeners
+    initializeVariables();
     const playButton = document.getElementById('play-button');
     const blocker = document.getElementById('blocker');
     const instructions = document.getElementById('instructions');
@@ -298,4 +319,16 @@ window.addEventListener('DOMContentLoaded', () => {
             controls.lock();
         });
     }
+});
+
+window.addEventListener('unload', () => {
+    if (renderer) {
+        renderer.dispose();
+    }
+    if (scene) {
+        scene.clear();
+    }
+    document.removeEventListener('keydown', onKeyDown);
+    document.removeEventListener('keyup', onKeyUp);
+    stopAnimation();
 });
