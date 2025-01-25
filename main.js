@@ -139,7 +139,7 @@ function onKeyDown(event) {
             break;
 
         case 'Space':
-            if (canJump === true) velocity.y += 350;
+            if (canJump === true) velocity.y += 200; // Reduced jump strength
             canJump = false;
             break;
     }
@@ -180,7 +180,7 @@ function animate() {
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
 
-        velocity.y -= 9.8 * 100.0 * delta; // Apply gravity (mass * gravity)
+        velocity.y -= 4.9 * 100.0 * delta; // Reduced gravity (mass * gravity)
 
         direction.z = Number(moveForward) - Number(moveBackward);
         direction.x = Number(moveRight) - Number(moveLeft);
@@ -232,6 +232,20 @@ window.addEventListener('DOMContentLoaded', () => {
             blocker.style.display = 'block';
             instructions.style.display = 'block';
             init();
+        });
+
+        instructions.addEventListener('click', () => {
+            controls.lock();
+        }, false);
+
+        controls.addEventListener('lock', () => {
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+        });
+
+        controls.addEventListener('unlock', () => {
+            blocker.style.display = 'block';
+            instructions.style.display = '';
         });
     }
 });
