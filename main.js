@@ -233,19 +233,5 @@ window.addEventListener('DOMContentLoaded', () => {
             instructions.style.display = 'block';
             init();
         });
-
-        instructions.addEventListener('click', () => {
-            controls.lock();
-        }, false);
-
-        controls.addEventListener('lock', () => {
-            instructions.style.display = 'none';
-            blocker.style.display = 'none';
-        });
-
-        controls.addEventListener('unlock', () => {
-            blocker.style.display = 'block';
-            instructions.style.display = '';
-        });
     }
 });
