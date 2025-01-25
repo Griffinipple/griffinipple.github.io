@@ -84,3 +84,22 @@ window.onload = () => {
     init();
     gameLoop();
 };
+
+// Wait for the DOM to fully load before accessing the button element
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Get the button element by its ID
+    const playButton = document.getElementById('play-button');
+
+    // Add an event listener for the 'click' event
+    playButton.addEventListener('click', () => {
+        // Call the function that starts the game
+        startGame();
+    });
+});
+
+// Define the function that starts the game
+function startGame() {
+    console.log('Game started!');
+    init();
+    gameLoop();
+}
