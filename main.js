@@ -89,14 +89,6 @@ function init() {
     // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
 
-    // Setup play button functionality
-    document.getElementById('play-button').addEventListener('click', () => {
-        document.getElementById('play-button').style.display = 'none';
-        blocker.style.display = 'block';
-        instructions.style.display = 'block';
-        controls.lock();
-    });
-
     // Event listeners for instructions overlay
     instructions.addEventListener('click', function () {
         controls.lock();
@@ -228,5 +220,14 @@ function animate() {
 
 // Start the game once the content is loaded
 window.addEventListener('DOMContentLoaded', (event) => {
-    init();
+    // Make sure the play button exists before adding the event listener
+    const playButton = document.getElementById('play-button');
+    if (playButton) {
+        playButton.addEventListener('click', () => {
+            playButton.style.display = 'none';
+            document.getElementById('blocker').style.display = 'block';
+            document.getElementById('instructions').style.display = 'block';
+            init();
+        });
+    }
 });
