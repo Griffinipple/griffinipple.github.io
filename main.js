@@ -84,26 +84,6 @@ function init() {
     // Handle window resize
     window.addEventListener('resize', onWindowResize, false);
 
-    // Event listeners for instructions overlay
-    const blocker = document.getElementById('blocker');
-    const instructions = document.getElementById('instructions');
-
-    if (instructions) {
-        instructions.addEventListener('click', function () {
-            controls.lock();
-        }, false);
-
-        controls.addEventListener('lock', function () {
-            instructions.style.display = 'none';
-            blocker.style.display = 'none';
-        });
-
-        controls.addEventListener('unlock', function () {
-            blocker.style.display = 'block';
-            instructions.style.display = '';
-        });
-    }
-
     // Start the animation loop
     animate();
 }
@@ -304,10 +284,6 @@ window.addEventListener('DOMContentLoaded', () => {
             init();
         });
 
-        instructions.addEventListener('click', () => {
-            controls.lock();
-        }, false);
-
         controls.addEventListener('lock', () => {
             instructions.style.display = 'none';
             blocker.style.display = 'none';
@@ -316,6 +292,10 @@ window.addEventListener('DOMContentLoaded', () => {
         controls.addEventListener('unlock', () => {
             blocker.style.display = 'block';
             instructions.style.display = '';
+        });
+
+        instructions.addEventListener('click', () => {
+            controls.lock();
         });
     }
 });
