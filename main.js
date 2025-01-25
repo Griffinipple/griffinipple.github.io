@@ -1,45 +1,51 @@
-// This file serves as the entry point for the JavaScript code. It initializes the game, sets up the rendering context, and manages the game loop.
-
-const canvas = document.getElementById('gameCanvas');
-let context = canvas.getContext('webgl');
-
-// Ensure the WebGL context is available
-if (!context) {
-    console.error('WebGL not supported, falling back on experimental-webgl');
-    context = canvas.getContext('experimental-webgl');
-}
-if (!context) {
-    alert('Your browser does not support WebGL');
-}
-
-let camera = {
-    x: 0,
-    y: 0,
-    z: 0,
-    pitch: 0,
-    yaw: 0
-};
-
-let gameRunning = true;
+let scene, camera, renderer;
+let platform, ramp, block;
 
 function init() {
-    // Initialize WebGL context and set up the scene
-    context.clearColor(0.0, 0.0, 0.0, 1.0);
-    context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
+    // Create a new scene
+    scene = new THREE.Scene();
 
-    // Load 3D models and other assets here
-    loadAssets();
+    // Create a camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
 
+    // Create a renderer and append it to the document
+    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas') });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Create the platform
+    const platformGeometry = new THREE.BoxGeometry(10, 1, 10);
+    const platformMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    platform = new THREE.Mesh(platformGeometry, platformMaterial);
+    platform.position.y = -0.5;
+    scene.add(platform);
+
+    // Create the ramp
+    const rampGeometry = new THREE.BoxGeometry(5, 0.5, 2);
+    const rampMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    ramp = new THREE.Mesh(rampGeometry, rampMaterial);
+    ramp.position.set(2, 0, -4);
+    ramp.rotation.x = -Math.PI / 6; // Tilt the ramp
+    scene.add(ramp);
+
+    // Create the block
+    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const blockMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+    block = new THREE.Mesh(blockGeometry, blockMaterial);
+    block.position.set(2, 0.5, -6);
+    scene.add(block);
+
+    // Add event listeners
     document.addEventListener('click', () => {
         document.body.requestPointerLock();
     });
     document.addEventListener('pointerlockchange', lockChangeAlert, false);
     document.addEventListener('mousemove', updateCameraDirection, false);
-}
 
-function loadAssets() {
-    // Load models, textures, etc.
-    // Placeholder for asset loading logic
+    // Start the animation loop
+    animate();
 }
 
 function lockChangeAlert() {
@@ -52,69 +58,20 @@ function lockChangeAlert() {
 
 function updateCameraDirection(event) {
     if (document.pointerLockElement === document.body) {
-        camera.yaw += event.movementX * 0.002;
-        camera.pitch -= event.movementY * 0.002;
-        camera.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.pitch));
+        camera.rotation.y -= event.movementX * 0.002;
+        camera.rotation.x -= event.movementY * 0.002;
+        camera.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, camera.rotation.x));
     }
 }
 
-function gameLoop() {
-    if (gameRunning) {
-        update();
-        render();
-        requestAnimationFrame(gameLoop);
-    }
-}
+function animate() {
+    requestAnimationFrame(animate);
 
-function update() {
-    // Update game state
-}
+    // Update game state if necessary
 
-function render() {
     // Render the scene
-    context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
-
-    // Apply camera transformations
-    let viewMatrix = mat4.create();
-    mat4.rotateX(viewMatrix, viewMatrix, camera.pitch);
-    mat4.rotateY(viewMatrix, viewMatrix, camera.yaw);
-    mat4.translate(viewMatrix, viewMatrix, [-camera.x, -camera.y, -camera.z]);
-
-    // Draw the white platform
-    drawPlatform(viewMatrix);
-
-    // Draw the black ramp
-    drawRamp(viewMatrix);
-
-    // Draw the block next to the ramp
-    drawBlock(viewMatrix);
+    renderer.render(scene, camera);
 }
-
-function drawPlatform(viewMatrix) {
-    // Placeholder for platform drawing logic
-    // Set up and draw a white platform using WebGL
-    context.uniform4f(context.getUniformLocation(program, 'color'), 1.0, 1.0, 1.0, 1.0); // white
-    // Add the platform drawing code here
-}
-
-function drawRamp(viewMatrix) {
-    // Placeholder for ramp drawing logic
-    // Set up and draw a black ramp using WebGL
-    context.uniform4f(context.getUniformLocation(program, 'color'), 0.0, 0.0, 0.0, 1.0); // black
-    // Add the ramp drawing code here
-}
-
-function drawBlock(viewMatrix) {
-    // Placeholder for block drawing logic
-    // Set up and draw a block next to the ramp using WebGL
-    context.uniform4f(context.getUniformLocation(program, 'color'), 0.5, 0.5, 0.5, 1.0); // grey
-    // Add the block drawing code here
-}
-
-window.onload = () => {
-    init();
-    gameLoop();
-};
 
 // Wait for the DOM to fully load before accessing the button element
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -125,16 +82,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     playButton.addEventListener('click', () => {
         // Hide the play button and show the game canvas
         playButton.style.display = 'none';
-        canvas.style.display = 'block';
+        document.getElementById('gameCanvas').style.display = 'block';
 
-        // Call the function that starts the game
-        startGame();
+        // Initialize and start the game
+        init();
     });
 });
-
-// Define the function that starts the game
-function startGame() {
-    console.log('Game started!');
-    init();
-    gameLoop();
-}

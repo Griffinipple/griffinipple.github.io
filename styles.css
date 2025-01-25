@@ -16,25 +16,6 @@ canvas {
     height: 100vh;
 }
 
-h1 {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    color: white;
-    font-size: 24px;
-    z-index: 10;
-}
-
-.game-over {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: red;
-    font-size: 32px;
-    z-index: 10;
-}
-
 #game-container {
     position: relative;
     width: 100%;
