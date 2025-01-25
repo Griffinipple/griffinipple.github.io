@@ -3,6 +3,15 @@
 const canvas = document.getElementById('gameCanvas');
 let context = canvas.getContext('webgl');
 
+// Ensure the WebGL context is available
+if (!context) {
+    console.error('WebGL not supported, falling back on experimental-webgl');
+    context = canvas.getContext('experimental-webgl');
+}
+if (!context) {
+    alert('Your browser does not support WebGL');
+}
+
 let camera = {
     x: 0,
     y: 0,
@@ -15,13 +24,8 @@ let gameRunning = true;
 
 function init() {
     // Initialize WebGL context and set up the scene
-    if (!context) {
-        console.error('WebGL not supported, falling back on experimental-webgl');
-        context = canvas.getContext('experimental-webgl');
-    }
-    if (!context) {
-        alert('Your browser does not support WebGL');
-    }
+    context.clearColor(0.0, 0.0, 0.0, 1.0);
+    context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
 
     // Load 3D models and other assets here
     loadAssets();
@@ -68,7 +72,6 @@ function update() {
 
 function render() {
     // Render the scene
-    context.clearColor(0.0, 0.0, 0.0, 1.0);
     context.clear(context.COLOR_BUFFER_BIT | context.DEPTH_BUFFER_BIT);
 
     // Apply camera transformations
@@ -77,7 +80,35 @@ function render() {
     mat4.rotateY(viewMatrix, viewMatrix, camera.yaw);
     mat4.translate(viewMatrix, viewMatrix, [-camera.x, -camera.y, -camera.z]);
 
-    // Use viewMatrix for rendering the scene
+    // Draw the white platform
+    drawPlatform(viewMatrix);
+
+    // Draw the black ramp
+    drawRamp(viewMatrix);
+
+    // Draw the block next to the ramp
+    drawBlock(viewMatrix);
+}
+
+function drawPlatform(viewMatrix) {
+    // Placeholder for platform drawing logic
+    // Set up and draw a white platform using WebGL
+    context.uniform4f(context.getUniformLocation(program, 'color'), 1.0, 1.0, 1.0, 1.0); // white
+    // Add the platform drawing code here
+}
+
+function drawRamp(viewMatrix) {
+    // Placeholder for ramp drawing logic
+    // Set up and draw a black ramp using WebGL
+    context.uniform4f(context.getUniformLocation(program, 'color'), 0.0, 0.0, 0.0, 1.0); // black
+    // Add the ramp drawing code here
+}
+
+function drawBlock(viewMatrix) {
+    // Placeholder for block drawing logic
+    // Set up and draw a block next to the ramp using WebGL
+    context.uniform4f(context.getUniformLocation(program, 'color'), 0.5, 0.5, 0.5, 1.0); // grey
+    // Add the block drawing code here
 }
 
 window.onload = () => {
