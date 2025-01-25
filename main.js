@@ -118,7 +118,7 @@ function onKeyDown(event) {
             break;
 
         case 'Space':
-            if (canJump === true) velocity.y += 200; // Reduced jump strength
+            if (canJump === true) velocity.y += 15; // Adjusted jump strength for 3 blocks height
             canJump = false;
             break;
     }
@@ -159,7 +159,7 @@ function animate() {
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
 
-        velocity.y -= 4.9 * 100.0 * delta; // Reduced gravity (mass * gravity)
+        velocity.y -= 9.8 * 10.0 * delta; // Adjusted gravity
 
         direction.z = Number(moveForward) - Number(moveBackward);
         direction.x = Number(moveRight) - Number(moveLeft);
@@ -201,7 +201,7 @@ function checkCollisions() {
         const distance = intersections[0].distance;
         if (distance > 1.5) {
             // Apply gravity
-            velocity.y -= 4.9 * 100.0; // Reduced gravity
+            velocity.y -= 9.8 * 10.0; // Adjusted gravity
         } else {
             // Adjust position and velocity on collision
             controls.getObject().position.y = intersections[0].point.y + 1.5;
@@ -210,7 +210,7 @@ function checkCollisions() {
         }
     } else {
         // Apply gravity
-        velocity.y -= 4.9 * 100.0; // Reduced gravity
+        velocity.y -= 9.8 * 10.0; // Adjusted gravity
     }
 
     // Forward collision detection
