@@ -13,7 +13,6 @@ let canJump = false;
 
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-
 let prevTime = performance.now();
 
 function init() {
@@ -201,22 +200,93 @@ function animate() {
             canJump = true;
         }
 
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
+        // Adjust player position based on collisions
+        const displacement = velocity.clone().multiplyScalar(delta);
+        controls.getObject().position.add(displacement);
 
-        controls.getObject().position.y += velocity.y * delta; // Apply gravity to Y position
-
-        // Prevent falling below ground
-        if (controls.getObject().position.y < 1.5) {
-            velocity.y = 0;
-            controls.getObject().position.y = 1.5;
-            canJump = true;
-        }
+        // Check for collisions
+        checkCollisions();
 
         prevTime = time;
     }
 
     renderer.render(scene, camera);
+}
+
+function checkCollisions() {
+    // Downward collision detection
+    raycaster.set(controls.getObject().position, new THREE.Vector3(0, -1, 0));
+    let intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance > 1.5) {
+            // Apply gravity
+            velocity.y -= 4.9 * 100.0; // Reduced gravity
+        } else {
+            // Adjust position and velocity on collision
+            controls.getObject().position.y = intersections[0].point.y + 1.5;
+            velocity.y = 0;
+            canJump = true;
+        }
+    } else {
+        // Apply gravity
+        velocity.y -= 4.9 * 100.0; // Reduced gravity
+    }
+
+    // Forward collision detection
+    raycaster.set(controls.getObject().position, new THREE.Vector3(0, 0, -1));
+    intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance < 1.5) {
+            velocity.z = 0;
+            controls.getObject().position.z = intersections[0].point.z + 1.5;
+        }
+    }
+
+    // Backward collision detection
+    raycaster.set(controls.getObject().position, new THREE.Vector3(0, 0, 1));
+    intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance < 1.5) {
+            velocity.z = 0;
+            controls.getObject().position.z = intersections[0].point.z - 1.5;
+        }
+    }
+
+    // Left collision detection
+    raycaster.set(controls.getObject().position, new THREE.Vector3(-1, 0, 0));
+    intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance < 1.5) {
+            velocity.x = 0;
+            controls.getObject().position.x = intersections[0].point.x + 1.5;
+        }
+    }
+
+    // Right collision detection
+    raycaster.set(controls.getObject().position, new THREE.Vector3(1, 0, 0));
+    intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance < 1.5) {
+            velocity.x = 0;
+            controls.getObject().position.x = intersections[0].point.x - 1.5;
+        }
+    }
+
+    // Upward collision detection to handle ramps
+    raycaster.set(controls.getObject().position, new THREE.Vector3(0, 1, 0));
+    intersections = raycaster.intersectObjects(objects, false);
+    if (intersections.length > 0) {
+        const distance = intersections[0].distance;
+        if (distance < 1.5) {
+            velocity.y = 0;
+            controls.getObject().position.y = intersections[0].point.y - 1.5;
+        }
+    }
 }
 
 // Wait for the DOM to fully load before initializing the game
