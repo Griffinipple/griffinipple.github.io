@@ -1,11 +1,5 @@
 // main.js
 
-// Import Three.js modules
-import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js';
-
-// Import PointerLockControls
-import { PointerLockControls } from 'https://threejs.org/examples/jsm/controls/PointerLockControls.js';
-
 let camera, scene, renderer;
 let controls;
 let objects = [];
@@ -44,7 +38,7 @@ function init() {
     scene.add(directionalLight);
 
     // Add PointerLockControls
-    controls = new PointerLockControls(camera, document.body);
+    controls = new THREE.PointerLockControls(camera, document.body);
     scene.add(controls.getObject());
 
     // Setting up the blocker and instructions
