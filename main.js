@@ -92,6 +92,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Add an event listener for the 'click' event
     playButton.addEventListener('click', () => {
+        // Hide the play button and show the game canvas
+        playButton.style.display = 'none';
+        canvas.style.display = 'block';
+
         // Call the function that starts the game
         startGame();
     });
