@@ -90,19 +90,21 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 
     // Event listeners for instructions overlay
-    instructions.addEventListener('click', function () {
-        controls.lock();
-    }, false);
+    if (instructions) {
+        instructions.addEventListener('click', function () {
+            controls.lock();
+        }, false);
 
-    controls.addEventListener('lock', function () {
-        instructions.style.display = 'none';
-        blocker.style.display = 'none';
-    });
+        controls.addEventListener('lock', function () {
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+        });
 
-    controls.addEventListener('unlock', function () {
-        blocker.style.display = 'block';
-        instructions.style.display = '';
-    });
+        controls.addEventListener('unlock', function () {
+            blocker.style.display = 'block';
+            instructions.style.display = '';
+        });
+    }
 
     // Start the animation loop
     animate();
@@ -218,16 +220,33 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Start the game once the content is loaded
-window.addEventListener('DOMContentLoaded', (event) => {
-    // Make sure the play button exists before adding the event listener
+// Wait for the DOM to fully load before initializing the game
+window.addEventListener('DOMContentLoaded', () => {
+    // Get elements and add event listeners
     const playButton = document.getElementById('play-button');
-    if (playButton) {
+    const blocker = document.getElementById('blocker');
+    const instructions = document.getElementById('instructions');
+
+    if (playButton && blocker && instructions) {
         playButton.addEventListener('click', () => {
             playButton.style.display = 'none';
-            document.getElementById('blocker').style.display = 'block';
-            document.getElementById('instructions').style.display = 'block';
+            blocker.style.display = 'block';
+            instructions.style.display = 'block';
             init();
+        });
+
+        instructions.addEventListener('click', () => {
+            controls.lock();
+        }, false);
+
+        controls.addEventListener('lock', () => {
+            instructions.style.display = 'none';
+            blocker.style.display = 'none';
+        });
+
+        controls.addEventListener('unlock', () => {
+            blocker.style.display = 'block';
+            instructions.style.display = '';
         });
     }
 });
