@@ -1,6 +1,12 @@
 let camera, scene, renderer, controls;
 const objects = [];
 
+// Add raycaster
+const raycaster = new THREE.Raycaster();
+const rayDirection = new THREE.Vector3();
+const playerHeight = 2;
+const playerRadius = 0.5;
+
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
@@ -73,6 +79,11 @@ function init() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
 
+    // Add bounding boxes to all objects
+    objects.forEach(obj => {
+        obj.geometry.computeBoundingBox();
+    });
+
     animate();
 }
 
@@ -124,6 +135,30 @@ function onKeyUp(event) {
     }
 }
 
+function checkCollision(position, direction) {
+    raycaster.ray.origin.copy(position);
+    raycaster.ray.direction.copy(direction);
+    const intersects = raycaster.intersectObjects(objects);
+    return intersects.length > 0 && intersects[0].distance < playerRadius;
+}
+
+function checkGround(position) {
+    raycaster.ray.origin.copy(position);
+    raycaster.ray.direction.set(0, -1, 0);
+    const intersects = raycaster.intersectObjects(objects);
+    
+    if (intersects.length > 0 && intersects[0].distance < playerHeight) {
+        const normal = intersects[0].face.normal;
+        const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
+        
+        if (angle <= 45) {
+            camera.position.y = intersects[0].point.y + playerHeight;
+            return true;
+        }
+    }
+    return false;
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
@@ -132,11 +167,16 @@ function animate() {
 
         // Apply gravity
         yVelocity -= gravity * delta;
+        
+        // Store previous position for collision restoration
+        const previousPosition = camera.position.clone();
+
+        // Update Y position
         camera.position.y += yVelocity * delta;
 
-        // Ground check
-        if (camera.position.y < 2) {
-            camera.position.y = 2;
+        // Ground check and slope detection
+        const onGround = checkGround(camera.position);
+        if (onGround) {
             yVelocity = 0;
             canJump = true;
         }
@@ -148,15 +188,50 @@ function animate() {
         direction.x = Number(moveRight) - Number(moveLeft);
         direction.normalize();
 
+        // Movement with collision checks
         if (moveForward || moveBackward) {
-            velocity.z -= direction.z * speed * delta;
-        }
-        if (moveLeft || moveRight) {
-            velocity.x -= direction.x * speed * delta;
+            const moveDir = new THREE.Vector3(0, 0, -direction.z);
+            moveDir.applyQuaternion(camera.quaternion);
+            moveDir.y = 0;
+            moveDir.normalize();
+            
+            const newPos = camera.position.clone();
+            newPos.addScaledVector(moveDir, speed * delta);
+            
+            if (!checkCollision(camera.position, moveDir)) {
+                controls.moveForward(-direction.z * speed * delta);
+            }
         }
 
-        controls.moveRight(-velocity.x);
-        controls.moveForward(-velocity.z);
+        if (moveLeft || moveRight) {
+            const moveDir = new THREE.Vector3(-direction.x, 0, 0);
+            moveDir.applyQuaternion(camera.quaternion);
+            moveDir.y = 0;
+            moveDir.normalize();
+            
+            const newPos = camera.position.clone();
+            newPos.addScaledVector(moveDir, speed * delta);
+            
+            if (!checkCollision(camera.position, moveDir)) {
+                controls.moveRight(-direction.x * speed * delta);
+            }
+        }
+
+        // Final collision check
+        const finalPosition = camera.position.clone();
+        for (const obj of objects) {
+            if (obj.geometry.boundingBox === undefined) {
+                obj.geometry.computeBoundingBox();
+            }
+            
+            const box = obj.geometry.boundingBox.clone();
+            box.applyMatrix4(obj.matrixWorld);
+            
+            if (box.containsPoint(finalPosition)) {
+                camera.position.copy(previousPosition);
+                break;
+            }
+        }
     }
 
     renderer.render(scene, camera);
