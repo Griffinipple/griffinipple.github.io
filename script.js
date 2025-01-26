@@ -43,7 +43,7 @@ function init() {
     document.body.appendChild(renderer.domElement);
 
     // Create platform (center)
-    const platformGeometry = new THREE.BoxGeometry(20, 10, 20);
+    const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
     const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
     const platform = new THREE.Mesh(platformGeometry, platformMaterial);
     platform.position.y = -1;
@@ -82,7 +82,7 @@ function init() {
     objects.push(westRamp);
 
     // Create outer platforms (excluding positions above ramps)
-    const blockGeometry = new THREE.BoxGeometry(20, 20, 20);
+    const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
     const positions = [
