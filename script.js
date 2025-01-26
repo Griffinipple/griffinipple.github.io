@@ -42,63 +42,19 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Create platform (center)
-    const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
-    const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
-    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    platform.position.y = -1;
-    scene.add(platform);
-    objects.push(platform);
-
-    // Create ramps with adjusted length
-    const rampLength = 25; // Adjusted from 14.14
-    const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
-    const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
-
-    // Four ramps around center, positions adjusted to touch platforms
-    const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    northRamp.position.set(0, 4.5, -20);
-    northRamp.rotation.x = Math.PI / 7;
-    scene.add(northRamp);
-    objects.push(northRamp);
-
-    const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    southRamp.position.set(0, 4.5, 20);
-    southRamp.rotation.x = -Math.PI / 7;
-    scene.add(southRamp);
-    objects.push(southRamp);
-
-    const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
-    const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    eastRamp.position.set(20, 4.5, 0);
-    eastRamp.rotation.z = Math.PI / 7;
-    scene.add(eastRamp);
-    objects.push(eastRamp);
-
-    const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    westRamp.position.set(-20, 4.5, 0);
-    westRamp.rotation.z = -Math.PI / 7;
-    scene.add(westRamp);
-    objects.push(westRamp);
-
-    // Create outer platforms (excluding positions above ramps)
-    const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
-    const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
-
-    const positions = [
-        [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],  // Top row
-        [-40, -20], [-20, -20], [20, -20], [40, -20],  // Second row
-        [-40, 0], [40, 0],                             // Middle row (excluding ramp positions)
-        [-40, 20], [-20, 20], [20, 20], [40, 20],     // Fourth row
-        [-40, 40], [-20, 40], [0, 40], [20, 40], [40, 40]      // Bottom row
-    ];
-
-    positions.forEach(pos => {
-        const block = new THREE.Mesh(blockGeometry, blockMaterial);
-        block.position.set(pos[0], 10, pos[1]);
-        scene.add(block);
-        objects.push(block);
-    });
+    // Create first spawn area (original)
+    createSpawnArea(0, 0);
+    
+    // Create second spawn area (north)
+    createSpawnArea(0, -200);
+    
+    // Create connecting bridge
+    const bridgeGeometry = new THREE.BoxGeometry(20, 1, 120);
+    const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
+    const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+    bridge.position.set(0, 10, -100);
+    scene.add(bridge);
+    objects.push(bridge);
 
     // Lighting
     const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
@@ -145,6 +101,71 @@ function init() {
     });
 
     animate();
+}
+
+function createSpawnArea(offsetX, offsetZ) {
+    // Center platform
+    const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
+    const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+    platform.position.set(offsetX, -1, offsetZ);
+    scene.add(platform);
+    objects.push(platform);
+
+    // Four ramps
+    const rampLength = 25;
+    const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
+    const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
+
+    // Ramps (adjusted for offset)
+    const ramps = [
+        { pos: [0, -20], rot: -Math.PI / 7, axis: 'x' },
+        { pos: [0, 20], rot: Math.PI / 7, axis: 'x' },
+        { pos: [20, 0], rot: -Math.PI / 7, axis: 'z' },
+        { pos: [-20, 0], rot: Math.PI / 7, axis: 'z' }
+    ];
+
+    ramps.forEach(ramp => {
+        const rampMesh = new THREE.Mesh(
+            ramp.axis === 'x' ? rampGeometry : new THREE.BoxGeometry(rampLength, 1, 20),
+            rampMaterial
+        );
+        rampMesh.position.set(
+            offsetX + ramp.pos[0],
+            4.5,
+            offsetZ + ramp.pos[1]
+        );
+        if (ramp.axis === 'x') {
+            rampMesh.rotation.x = ramp.rot;
+        } else {
+            rampMesh.rotation.z = ramp.rot;
+        }
+        scene.add(rampMesh);
+        objects.push(rampMesh);
+    });
+
+    // Surrounding platforms
+    const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
+    const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
+    
+    const positions = [
+        [-40, -40], [-20, -40], [20, -40], [40, -40],
+        [-40, -20], [-20, -20], [20, -20], [40, -20],
+        [-40, 0], [40, 0],
+        [-40, 20], [-20, 20], [20, 20], [40, 20],
+        [-40, 40], [-20, 40], [20, 40], [40, 40]
+    ];
+
+    positions.forEach(pos => {
+        const block = new THREE.Mesh(blockGeometry, blockMaterial);
+        block.position.set(
+            offsetX + pos[0],
+            0,
+            offsetZ + pos[1]
+        );
+        scene.add(block);
+        objects.push(block);
+    });
 }
 
 function onKeyDown(event) {
