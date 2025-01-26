@@ -1,5 +1,8 @@
 // main.js
 
+const MOVEMENT_SPEED = 200; // Reduced from default
+const JUMP_FORCE = 250;
+
 let camera, scene, renderer;
 let controls;
 let objects = [];
@@ -30,6 +33,54 @@ function checkWebGLSupport() {
     } catch(e) {
         return false;
     }
+}
+
+function createPlatform(width, height, depth, x, y, z, color) {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    const material = new THREE.MeshStandardMaterial({ color: color });
+    const platform = new THREE.Mesh(geometry, material);
+    platform.position.set(x, y, z);
+    platform.receiveShadow = true;
+    platform.castShadow = true;
+    return platform;
+}
+
+function createRamp(width, height, depth, x, y, z, rotation) {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    const material = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const ramp = new THREE.Mesh(geometry, material);
+    ramp.position.set(x, y, z);
+    ramp.rotation.x = rotation;
+    ramp.receiveShadow = true;
+    ramp.castShadow = true;
+    return ramp;
+}
+
+function createObstacles() {
+    // Main platform
+    const mainPlatform = createPlatform(10, 1, 10, 0, 0.5, 0, 0xffffff);
+    scene.add(mainPlatform);
+    objects.push(mainPlatform);
+
+    // Secondary platforms
+    const platforms = [
+        createPlatform(8, 1, 8, 15, 2, 0, 0x66cc66),
+        createPlatform(8, 1, 8, -15, 3, 0, 0x6666cc),
+        createPlatform(8, 1, 8, 0, 4, 15, 0xcc6666)
+    ];
+
+    // Ramps
+    const ramps = [
+        createRamp(10, 1, 8, 7.5, 1.25, 0, Math.PI * 0.1),
+        createRamp(10, 1, 8, -7.5, 1.75, 0, -Math.PI * 0.1),
+        createRamp(8, 1, 10, 0, 2, 7.5, Math.PI * 0.1)
+    ];
+
+    // Add all elements to scene and collision objects
+    [...platforms, ...ramps].forEach(element => {
+        scene.add(element);
+        objects.push(element);
+    });
 }
 
 function init() {
@@ -97,30 +148,8 @@ function init() {
         scene.add(floor);
         objects.push(floor);
 
-        // Create the platform
-        const platformGeometry = new THREE.BoxGeometry(10, 1, 10);
-        const platformMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-        platform.position.y = 0.5;
-        scene.add(platform);
-        objects.push(platform);
-
-        // Create the ramp
-        const rampGeometry = new THREE.BoxGeometry(5, 0.5, 2);
-        const rampMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
-        const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
-        ramp.position.set(2, 0.25, -4);
-        ramp.rotation.z = -Math.PI / 6; // Tilt the ramp
-        scene.add(ramp);
-        objects.push(ramp);
-
-        // Create the block
-        const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-        const blockMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
-        const block = new THREE.Mesh(blockGeometry, blockMaterial);
-        block.position.set(2, 0.5, -6);
-        scene.add(block);
-        objects.push(block);
+        // Create obstacles after floor creation
+        createObstacles();
 
         // Raycaster for collision detection
         raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 1.5);
@@ -220,8 +249,8 @@ function animate() {
         direction.x = Number(moveRight) - Number(moveLeft);
         direction.normalize(); // Ensures consistent movement in all directions
 
-        if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
-        if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+        if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
+        if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
 
         // Raycasting for collision detection
         raycaster.ray.origin.copy(controls.getObject().position);
