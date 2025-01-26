@@ -33,7 +33,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Create platform
+    // Create platform (center)
     const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
     const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
     const platform = new THREE.Mesh(platformGeometry, platformMaterial);
@@ -48,30 +48,30 @@ function init() {
 
     // North ramp (facing outward)
     const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    northRamp.position.set(0, 4.5, -17);
-    northRamp.rotation.x = -Math.PI / 4; // Reversed angle to face outward
+    northRamp.position.set(0, 4.5, -10);
+    northRamp.rotation.x = -Math.PI / 4;
     scene.add(northRamp);
     objects.push(northRamp);
 
     // South ramp (facing outward)
     const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    southRamp.position.set(0, 4.5, 17);
-    southRamp.rotation.x = Math.PI / 4; // Reversed angle to face outward
+    southRamp.position.set(0, 4.5, 10);
+    southRamp.rotation.x = Math.PI / 4;
     scene.add(southRamp);
     objects.push(southRamp);
 
     // East ramp (facing outward)
     const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    eastRamp.position.set(17, 4.5, 0);
-    eastRamp.rotation.z = Math.PI / 4; // Reversed angle to face outward
+    eastRamp.position.set(10, 4.5, 0);
+    eastRamp.rotation.z = Math.PI / 4;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     // West ramp (facing outward)
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    westRamp.position.set(-17, 4.5, 0);
-    westRamp.rotation.z = -Math.PI / 4; // Reversed angle to face outward
+    westRamp.position.set(-10, 4.5, 0);
+    westRamp.rotation.z = -Math.PI / 4;
     scene.add(westRamp);
     objects.push(westRamp);
 
@@ -79,27 +79,27 @@ function init() {
     const blockGeometry = new THREE.BoxGeometry(20, 1, 20);
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
-    // Northeast block (aligned with ramp height)
+    // Northeast block
     const neBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    neBlock.position.set(27, 10, -27);
+    neBlock.position.set(20, 10, -20);
     scene.add(neBlock);
     objects.push(neBlock);
 
     // Northwest block
     const nwBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    nwBlock.position.set(-27, 10, -27);
+    nwBlock.position.set(-20, 10, -20);
     scene.add(nwBlock);
     objects.push(nwBlock);
 
     // Southeast block
     const seBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    seBlock.position.set(27, 10, 27);
+    seBlock.position.set(20, 10, 20);
     scene.add(seBlock);
     objects.push(seBlock);
 
     // Southwest block
     const swBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    swBlock.position.set(-27, 10, 27);
+    swBlock.position.set(-20, 10, 20);
     scene.add(swBlock);
     objects.push(swBlock);
 
