@@ -99,7 +99,7 @@ function init() {
         
         // Camera setup first
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 5, 10); // Move camera back to see scene
+        camera.position.set(0, 1.5, 0); // Reset camera position
         
         // Renderer setup
         renderer = new THREE.WebGLRenderer({ 
@@ -227,6 +227,7 @@ function onKeyUp(event) {
     }
 }
 
+// Reset movement code in animate()
 function animate() {
     animationFrameId = requestAnimationFrame(animate);
 
@@ -234,50 +235,26 @@ function animate() {
         const time = performance.now();
         const delta = (time - prevTime) / 1000;
 
-        // Get camera's forward and right vectors
-        const cameraDirection = new THREE.Vector3();
-        camera.getWorldDirection(cameraDirection);
-        const cameraRight = new THREE.Vector3();
-        cameraRight.crossVectors(camera.up, cameraDirection).normalize();
+        velocity.x -= velocity.x * 10.0 * delta;
+        velocity.z -= velocity.z * 10.0 * delta;
+        velocity.y -= GRAVITY * delta;
 
-        // Reset velocity
-        velocity.x -= velocity.x * 5.0 * delta;
-        velocity.z -= velocity.z * 5.0 * delta;
-        velocity.y -= GRAVITY * delta; // Reduced gravity
-
-        // Calculate movement direction
-        direction.set(0, 0, 0);
-        
-        if (moveForward) {
-            direction.addScaledVector(cameraDirection, 1);
-        }
-        if (moveBackward) {
-            direction.addScaledVector(cameraDirection, -1);
-        }
-        if (moveRight) {
-            direction.addScaledVector(cameraRight, 1);
-        }
-        if (moveLeft) {
-            direction.addScaledVector(cameraRight, -1);
-        }
-
-        // Normalize direction and apply movement
+        direction.z = Number(moveForward) - Number(moveBackward);
+        direction.x = Number(moveRight) - Number(moveLeft);
         direction.normalize();
+
         if (moveForward || moveBackward) {
-            velocity.z = direction.z * MOVEMENT_SPEED;
-            velocity.x = direction.x * MOVEMENT_SPEED;
+            velocity.z -= direction.z * MOVEMENT_SPEED * delta;
         }
         if (moveLeft || moveRight) {
-            velocity.z += direction.z * MOVEMENT_SPEED;
-            velocity.x += direction.x * MOVEMENT_SPEED;
+            velocity.x -= direction.x * MOVEMENT_SPEED * delta;
         }
 
-        // Apply movement
         controls.moveRight(-velocity.x * delta);
         controls.moveForward(-velocity.z * delta);
         controls.getObject().position.y += velocity.y * delta;
 
-        // Raycasting for collision detection
+        // Collision detection remains the same
         raycaster.ray.origin.copy(controls.getObject().position);
         raycaster.ray.origin.y -= 1.5;
 
@@ -289,11 +266,6 @@ function animate() {
             canJump = true;
         }
 
-        // Adjust player position based on collisions
-        const displacement = velocity.clone().multiplyScalar(delta);
-        controls.getObject().position.add(displacement);
-
-        // Check for collisions
         checkCollisions();
 
         prevTime = time;
