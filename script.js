@@ -5,7 +5,8 @@ const objects = [];
 const raycaster = new THREE.Raycaster();
 const rayDirection = new THREE.Vector3();
 const playerHeight = 2;
-const playerRadius = 0.5;
+const playerRadius = 0.8; // Increased for better collision
+const slopeThreshold = 60; // More lenient slope detection
 
 let moveForward = false;
 let moveBackward = false;
@@ -201,7 +202,19 @@ function checkCollision(position, direction) {
     raycaster.ray.origin.copy(position);
     raycaster.ray.direction.copy(direction);
     const intersects = raycaster.intersectObjects(objects);
-    return intersects.length > 0 && intersects[0].distance < playerRadius;
+    
+    if (intersects.length > 0) {
+        const normal = intersects[0].face.normal;
+        const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
+        
+        // Allow movement up slopes
+        if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 1.5) {
+            return true;
+        }
+        // Regular collision for walls
+        return intersects[0].distance < playerRadius;
+    }
+    return false;
 }
 
 function checkGround(position) {
@@ -209,12 +222,13 @@ function checkGround(position) {
     raycaster.ray.direction.set(0, -1, 0);
     const intersects = raycaster.intersectObjects(objects);
     
-    if (intersects.length > 0 && intersects[0].distance < playerHeight) {
+    if (intersects.length > 0 && intersects[0].distance < playerHeight + 0.5) { // Added buffer
         const normal = intersects[0].face.normal;
         const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
         
-        if (angle <= 45) {
-            camera.position.y = intersects[0].point.y + playerHeight;
+        if (angle <= slopeThreshold) { // More lenient angle check
+            const slope = 1 - (angle / 90); // Calculate slope factor
+            camera.position.y = intersects[0].point.y + (playerHeight * slope);
             return true;
         }
     }
@@ -226,20 +240,20 @@ function animate() {
 
     if (controls.isLocked === true) {
         const delta = 0.016;
-
-        // Apply gravity
-        yVelocity -= gravity * delta;
-        
-        // Store previous position for collision restoration
         const previousPosition = camera.position.clone();
 
-        // Update Y position
+        // Apply gravity with slope consideration
+        if (!onGround) {
+            yVelocity -= gravity * delta;
+        } else {
+            yVelocity = Math.max(-2, yVelocity); // Limit downward velocity on slopes
+        }
+        
         camera.position.y += yVelocity * delta;
 
-        // Ground check and slope detection
         const onGround = checkGround(camera.position);
         if (onGround) {
-            yVelocity = 0;
+            yVelocity = Math.max(yVelocity, 0); // Reset velocity if positive
             canJump = true;
         }
 
