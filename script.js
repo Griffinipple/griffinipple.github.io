@@ -64,14 +64,14 @@ function init() {
     const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     eastRamp.position.set(17, 4.5, 0);
-    eastRamp.rotation.z = -Math.PI / 4;
+    eastRamp.rotation.z = -Math.PI / 2;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     // West ramp (facing outward)
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     westRamp.position.set(-17, 4.5, 0);
-    westRamp.rotation.z = Math.PI / 4;
+    westRamp.rotation.z = Math.PI / 2;
     scene.add(westRamp);
     objects.push(westRamp);
 
@@ -240,13 +240,16 @@ function checkGround(position) {
     raycaster.ray.direction.set(0, -1, 0);
     const intersects = raycaster.intersectObjects(objects);
     
-    if (intersects.length > 0 && intersects[0].distance < playerHeight + 0.5) { // Added buffer
+    // More generous ground check distance
+    const groundCheckDistance = playerHeight + 0.1; // Small buffer added
+    
+    if (intersects.length > 0 && intersects[0].distance < groundCheckDistance) {
         const normal = intersects[0].face.normal;
         const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
         
-        if (angle <= slopeThreshold) { // More lenient angle check
-            const slope = 1 - (angle / 90); // Calculate slope factor
-            camera.position.y = intersects[0].point.y + (playerHeight * slope);
+        // More lenient slope check for jumping
+        if (angle <= slopeThreshold) {
+            camera.position.y = intersects[0].point.y + playerHeight;
             return true;
         }
     }
@@ -260,15 +263,17 @@ function animate() {
         const delta = 0.016;
         const previousPosition = camera.position.clone();
 
-        // Ground check first
+        // Ground check before movement
         const onGround = checkGround(camera.position);
 
-        // Apply gravity with slope consideration
-        if (!onGround) {
-            yVelocity -= gravity * delta;
-        } else {
-            yVelocity = 0; // Reset velocity on ground
+        // Update jump state
+        if (onGround) {
             canJump = true;
+            if (yVelocity < 0) {
+                yVelocity = 0;
+            }
+        } else {
+            yVelocity -= gravity * delta;
         }
         
         camera.position.y += yVelocity * delta;
