@@ -119,10 +119,10 @@ function createSpawnArea(offsetX, offsetZ) {
 
     // Ramps (adjusted for offset)
     const ramps = [
-        { pos: [0, -20], rot: -Math.PI / 7, axis: 'x' },
-        { pos: [0, 20], rot: Math.PI / 7, axis: 'x' },
-        { pos: [20, 0], rot: -Math.PI / 7, axis: 'z' },
-        { pos: [-20, 0], rot: Math.PI / 7, axis: 'z' }
+        { pos: [0, -20], rot: Math.PI / 7, axis: 'x' },
+        { pos: [0, 20], rot: -Math.PI / 7, axis: 'x' },
+        { pos: [20, 0], rot: Math.PI / 7, axis: 'z' },
+        { pos: [-20, 0], rot: -Math.PI / 7, axis: 'z' }
     ];
 
     ramps.forEach(ramp => {
@@ -149,18 +149,18 @@ function createSpawnArea(offsetX, offsetZ) {
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
     
     const positions = [
-        [-40, -40], [-20, -40], [20, -40], [40, -40],
+        [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],
         [-40, -20], [-20, -20], [20, -20], [40, -20],
         [-40, 0], [40, 0],
         [-40, 20], [-20, 20], [20, 20], [40, 20],
-        [-40, 40], [-20, 40], [20, 40], [40, 40]
+        [-40, 40], [-20, 40], [0, 40], [20, 40], [40, 40]
     ];
 
     positions.forEach(pos => {
         const block = new THREE.Mesh(blockGeometry, blockMaterial);
         block.position.set(
             offsetX + pos[0],
-            0,
+            5,
             offsetZ + pos[1]
         );
         scene.add(block);
