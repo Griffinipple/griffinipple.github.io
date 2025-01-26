@@ -5,8 +5,8 @@ const objects = [];
 const raycaster = new THREE.Raycaster();
 const rayDirection = new THREE.Vector3();
 const playerHeight = 2;
-const playerRadius = 0.4; // Reduced for smoother collision
-const slopeThreshold = 60; // Increased for better slope handling
+const playerRadius = 0.4; // Updated from 0.6
+const slopeThreshold = 60; // Updated from 45
 
 let moveForward = false;
 let moveBackward = false;
@@ -17,11 +17,19 @@ let canJump = true;
 // Modify speed and add jump variables
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-const speed = 25.0; // Reduced for smoother movement
+const speed = 25.0; // Updated from 35.0
 const jumpForce = 30; // Increased from 15
-const gravity = 20; // Reduced for better air control
+const gravity = 25; // Reduced from 30 for better jump feel
+const acceleration = 150.0;
+const friction = 10.0;
+const airControl = 0.3;
 let yVelocity = 0;
-const groundCheckDistance = playerHeight + 0.2; // Increased buffer
+
+let moveState = {
+    grounded: false,
+    sliding: false,
+    velocity: new THREE.Vector3()
+};
 
 init();
 
@@ -220,29 +228,18 @@ function onKeyUp(event) {
 function checkCollision(position, direction) {
     raycaster.ray.origin.copy(position);
     raycaster.ray.direction.copy(direction);
+    const intersects = raycaster.intersectObjects(objects);
     
-    // Multiple raycasts for better collision detection
-    const rays = [
-        direction,
-        direction.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 8),
-        direction.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 8)
-    ];
-    
-    for (const ray of rays) {
-        raycaster.ray.direction.copy(ray);
-        const intersects = raycaster.intersectObjects(objects);
+    if (intersects.length > 0) {
+        const normal = intersects[0].face.normal;
+        const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
         
-        if (intersects.length > 0) {
-            const normal = intersects[0].face.normal;
-            const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
-            
-            if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 2) {
-                return true;
-            }
-            if (intersects[0].distance < playerRadius) {
-                return true;
-            }
+        // Allow movement up slopes
+        if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 1.5) {
+            return true;
         }
+        // Regular collision for walls
+        return intersects[0].distance < playerRadius;
     }
     return false;
 }
@@ -253,7 +250,7 @@ function checkGround(position) {
     const intersects = raycaster.intersectObjects(objects);
     
     // More generous ground check distance
-    const groundCheckDistance = playerHeight + 0.2; // Increased buffer
+    const groundCheckDistance = playerHeight + 0.1; // Small buffer added
     
     if (intersects.length > 0 && intersects[0].distance < groundCheckDistance) {
         const normal = intersects[0].face.normal;
@@ -268,47 +265,69 @@ function checkGround(position) {
     return false;
 }
 
+function updateMovement(delta) {
+    const previousPosition = camera.position.clone();
+    moveState.grounded = checkGround(camera.position);
+
+    // Apply friction
+    if (moveState.grounded) {
+        moveState.velocity.x *= 1.0 - Math.min(friction * delta, 1);
+        moveState.velocity.z *= 1.0 - Math.min(friction * delta, 1);
+    }
+
+    // Calculate desired movement
+    let input = new THREE.Vector3(
+        Number(moveRight) - Number(moveLeft),
+        0,
+        Number(moveForward) - Number(moveBackward)
+    ).normalize();
+
+    // Apply movement forces
+    if (input.length() > 0) {
+        let accel = acceleration;
+        if (!moveState.grounded) accel *= airControl;
+
+        input.applyQuaternion(camera.quaternion);
+        input.y = 0;
+        input.normalize();
+
+        moveState.velocity.x += input.x * accel * delta;
+        moveState.velocity.z += input.z * accel * delta;
+    }
+
+    // Apply speed limit
+    const speedLimit = speed;
+    const horizontalVelocity = new THREE.Vector2(moveState.velocity.x, moveState.velocity.z);
+    if (horizontalVelocity.length() > speedLimit) {
+        horizontalVelocity.normalize().multiplyScalar(speedLimit);
+        moveState.velocity.x = horizontalVelocity.x;
+        moveState.velocity.z = horizontalVelocity.y;
+    }
+
+    // Apply movement with collision check
+    const movement = moveState.velocity.clone().multiplyScalar(delta);
+    if (!checkCollision(camera.position, movement.normalize())) {
+        camera.position.add(movement);
+    } else {
+        moveState.velocity.multiplyScalar(0.5);
+    }
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
     if (controls.isLocked) {
         const delta = Math.min(0.016, clock.getDelta());
-        const previousPosition = camera.position.clone();
-        const onGround = checkGround(camera.position);
-
-        // Smoother velocity changes
-        if (onGround) {
-            velocity.x *= 0.8; // Ground friction
-            velocity.z *= 0.8;
-            canJump = true;
-            if (yVelocity < 0) yVelocity = 0;
-        } else {
-            velocity.x *= 0.95; // Air resistance
-            velocity.z *= 0.95;
-            yVelocity -= gravity * delta;
-        }
-
-        // Smooth movement application
-        if (moveForward || moveBackward || moveLeft || moveRight) {
-            const acceleration = onGround ? speed : speed * 0.3;
-            
-            if (moveForward || moveBackward) {
-                velocity.z += direction.z * acceleration * delta;
-            }
-            if (moveLeft || moveRight) {
-                velocity.x += direction.x * acceleration * delta;
-            }
-        }
-
-        // Apply movement with collision checks
-        const moveVector = new THREE.Vector3(velocity.x, 0, velocity.z).multiplyScalar(delta);
-        moveVector.applyQuaternion(camera.quaternion);
+        updateMovement(delta);
         
-        if (!checkCollision(camera.position, moveVector.normalize())) {
-            controls.moveRight(velocity.x * delta);
-            controls.moveForward(velocity.z * delta);
+        // Apply gravity
+        if (!moveState.grounded) {
+            yVelocity -= gravity * delta;
+        } else {
+            yVelocity = Math.max(0, yVelocity);
+            canJump = true;
         }
-
+        
         camera.position.y += yVelocity * delta;
     }
 
