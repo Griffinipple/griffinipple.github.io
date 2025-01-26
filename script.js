@@ -58,14 +58,14 @@ function init() {
     // North ramp (facing outward)
     const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
     northRamp.position.set(0, 4.5, -17);
-    northRamp.rotation.x = Math.PI / 4;
+    northRamp.rotation.x = -Math.PI / 4;
     scene.add(northRamp);
     objects.push(northRamp);
 
     // South ramp (facing outward)
     const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
     southRamp.position.set(0, 4.5, 17);
-    southRamp.rotation.x = -Math.PI / 4;
+    southRamp.rotation.x = Math.PI / 4;
     scene.add(southRamp);
     objects.push(southRamp);
 
@@ -73,14 +73,14 @@ function init() {
     const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     eastRamp.position.set(17, 4.5, 0);
-    eastRamp.rotation.z = Math.PI / 4;
+    eastRamp.rotation.z = -Math.PI / 4;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     // West ramp (facing outward)
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     westRamp.position.set(-17, 4.5, 0);
-    westRamp.rotation.z = -Math.PI / 4;
+    westRamp.rotation.z = Math.PI / 4;
     scene.add(westRamp);
     objects.push(westRamp);
 
@@ -129,6 +129,27 @@ function init() {
     westBlock.position.set(-20, 10, 0);
     scene.add(westBlock);
     objects.push(westBlock);
+
+    // Add surrounding platforms near ramps
+    const northPlatform = new THREE.Mesh(blockGeometry, blockMaterial);
+    northPlatform.position.set(0, -1, -34);
+    scene.add(northPlatform);
+    objects.push(northPlatform);
+
+    const southPlatform = new THREE.Mesh(blockGeometry, blockMaterial);
+    southPlatform.position.set(0, -1, 34);
+    scene.add(southPlatform);
+    objects.push(southPlatform);
+
+    const eastPlatform = new THREE.Mesh(blockGeometry, blockMaterial);
+    eastPlatform.position.set(34, -1, 0);
+    scene.add(eastPlatform);
+    objects.push(eastPlatform);
+
+    const westPlatform = new THREE.Mesh(blockGeometry, blockMaterial);
+    westPlatform.position.set(-34, -1, 0);
+    scene.add(westPlatform);
+    objects.push(westPlatform);
 
     // Lighting
     const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
@@ -318,24 +339,39 @@ function animate() {
 
     if (controls.isLocked === true) {
         const delta = 0.016;
-        const previousPosition = camera.position.clone();
 
-        // Ground check before movement
+        // Ground check and gravity
         const onGround = checkGround(camera.position);
-
-        // Update jump state
         if (onGround) {
             canJump = true;
-            if (yVelocity < 0) {
-                yVelocity = 0;
-            }
+            if (yVelocity < 0) yVelocity = 0;
         } else {
             yVelocity -= gravity * delta;
         }
         
         camera.position.y += yVelocity * delta;
 
-        // ...rest of animate function remains the same...
+        // Movement
+        velocity.x = 0;
+        velocity.z = 0;
+
+        if (moveForward) velocity.z -= speed;
+        if (moveBackward) velocity.z += speed;
+        if (moveLeft) velocity.x -= speed;
+        if (moveRight) velocity.x += speed;
+
+        // Apply movement relative to camera direction
+        if (velocity.x !== 0 || velocity.z !== 0) {
+            let moveVector = new THREE.Vector3(velocity.x, 0, velocity.z);
+            moveVector.normalize();
+            moveVector.multiplyScalar(speed * delta);
+            moveVector.applyQuaternion(camera.quaternion);
+            
+            // Check collision before moving
+            if (!checkCollision(camera.position, moveVector)) {
+                camera.position.add(moveVector);
+            }
+        }
     }
 
     renderer.render(scene, camera);
