@@ -316,19 +316,26 @@ function updateMovement(delta) {
 function animate() {
     requestAnimationFrame(animate);
 
-    if (controls.isLocked) {
-        const delta = Math.min(0.016, clock.getDelta());
-        updateMovement(delta);
-        
-        // Apply gravity
-        if (!moveState.grounded) {
-            yVelocity -= gravity * delta;
-        } else {
-            yVelocity = Math.max(0, yVelocity);
+    if (controls.isLocked === true) {
+        const delta = 0.016;
+        const previousPosition = camera.position.clone();
+
+        // Ground check before movement
+        const onGround = checkGround(camera.position);
+
+        // Update jump state
+        if (onGround) {
             canJump = true;
+            if (yVelocity < 0) {
+                yVelocity = 0;
+            }
+        } else {
+            yVelocity -= gravity * delta;
         }
         
         camera.position.y += yVelocity * delta;
+
+        // ...rest of animate function remains the same...
     }
 
     renderer.render(scene, camera);
