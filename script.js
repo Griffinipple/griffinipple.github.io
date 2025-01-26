@@ -361,30 +361,38 @@ function stopAnimation() {
     }
 }
 
-// Update event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const playButton = document.getElementById('play-button');
-    if (playButton) {
-        playButton.addEventListener('click', init);
-    }
-});
+// Add keyboard event listeners
+document.addEventListener('keydown', onKeyDown);
+document.addEventListener('keyup', onKeyUp);
 
-// Wait for the DOM to fully load before initializing the game
+// Update DOMContentLoaded listener to proper initialization order
 window.addEventListener('DOMContentLoaded', () => {
-    initializeVariables();
     const playButton = document.getElementById('play-button');
     const blocker = document.getElementById('blocker');
     const instructions = document.getElementById('instructions');
 
-    if (playButton && blocker && instructions) {
-        playButton.addEventListener('click', () => {
-            const success = init();
-            if (success) {
-                playButton.style.display = 'none';
-                controls.lock();
-            }
-        });
+    if (!playButton || !blocker || !instructions) {
+        console.error('Required DOM elements not found');
+        return;
+    }
 
+    // Initialize variables first
+    initializeVariables();
+
+    // Add event listeners for controls
+    playButton.addEventListener('click', () => {
+        const success = init();
+        if (success) {
+            playButton.style.display = 'none';
+            if (controls) {
+                controls.lock();
+            } else {
+                console.error('Controls not initialized');
+            }
+        }
+    });
+
+    if (controls) {
         controls.addEventListener('lock', () => {
             instructions.style.display = 'none';
             blocker.style.display = 'none';
@@ -398,6 +406,8 @@ window.addEventListener('DOMContentLoaded', () => {
         instructions.addEventListener('click', () => {
             controls.lock();
         });
+    } else {
+        console.error('Controls not initialized properly');
     }
 });
 
