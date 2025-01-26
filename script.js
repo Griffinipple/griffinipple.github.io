@@ -5,11 +5,15 @@ let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
+let canJump = true;
 
-// Add velocity and speed variables
+// Modify speed and add jump variables
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-const speed = 100.0;
+const speed = 50.0; // Reduced from 100
+const jumpForce = 15;
+const gravity = 30;
+let yVelocity = 0;
 
 init();
 
@@ -59,6 +63,10 @@ function init() {
         // menu.style.display = 'flex';
     });
 
+    instructions.addEventListener('click', function() {
+        controls.lock();
+    });
+
     camera.position.y = 2;
 
     // Event listeners for movement
@@ -85,6 +93,12 @@ function onKeyDown(event) {
         case 'ArrowRight':
         case 'KeyD':
             moveRight = true;
+            break;
+        case 'Space':
+            if (canJump) {
+                yVelocity = jumpForce;
+                canJump = false;
+            }
             break;
     }
 }
@@ -113,9 +127,19 @@ function onKeyUp(event) {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Add movement logic
     if (controls.isLocked === true) {
-        const delta = 0.016; // Approximately 60 FPS
+        const delta = 0.016;
+
+        // Apply gravity
+        yVelocity -= gravity * delta;
+        camera.position.y += yVelocity * delta;
+
+        // Ground check
+        if (camera.position.y < 2) {
+            camera.position.y = 2;
+            yVelocity = 0;
+            canJump = true;
+        }
 
         velocity.x = 0;
         velocity.z = 0;
