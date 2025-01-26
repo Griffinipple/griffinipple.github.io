@@ -1,69 +1,65 @@
-let camera, scene, renderer;
-let controls;
-let objects = [];
-let raycaster;
+let camera, scene, renderer, controls;
+const objects = [];
 
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
-let canJump = false;
 
-let prevTime = performance.now();
-let velocity = new THREE.Vector3();
-let direction = new THREE.Vector3();
-
-// Constants
-const MOVEMENT_SPEED = 400;
-const GRAVITY = 9.8;
-const JUMP_FORCE = 350;
+init();
 
 function init() {
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb);
-
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.y = 1.5;
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
+    // Create platform
+    const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
+    const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+    platform.position.y = -1;
+    scene.add(platform);
+    objects.push(platform);
+
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff);
-    directionalLight.position.set(1, 1, 0.5);
-    scene.add(directionalLight);
+    const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+    scene.add(light);
 
     // Controls
     controls = new THREE.PointerLockControls(camera, document.body);
 
-    // Floor
-    const floorGeometry = new THREE.PlaneGeometry(2000, 2000);
-    const floorMaterial = new THREE.MeshPhongMaterial({ 
-        color: 0x808080,
-        side: THREE.DoubleSide
+    const blocker = document.getElementById('blocker');
+    const instructions = document.getElementById('instructions');
+    const menu = document.getElementById('menu');
+    const playButton = document.getElementById('playButton');
+
+    playButton.addEventListener('click', function() {
+        controls.lock();
+        menu.style.display = 'none';
     });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-    objects.push(floor);
 
-    raycaster = new THREE.Raycaster();
+    controls.addEventListener('lock', function() {
+        instructions.style.display = 'none';
+        blocker.style.display = 'none';
+    });
 
+    controls.addEventListener('unlock', function() {
+        blocker.style.display = 'block';
+        instructions.style.display = 'flex';
+        menu.style.display = 'flex';
+    });
+
+    camera.position.y = 2;
+
+    // Event listeners for movement
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
-    window.addEventListener('resize', onWindowResize);
-}
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    animate();
 }
 
 function onKeyDown(event) {
@@ -83,12 +79,6 @@ function onKeyDown(event) {
         case 'ArrowRight':
         case 'KeyD':
             moveRight = true;
-            break;
-        case 'Space':
-            if (canJump) {
-                velocity.y = JUMP_FORCE;
-                canJump = false;
-            }
             break;
     }
 }
@@ -116,38 +106,5 @@ function onKeyUp(event) {
 
 function animate() {
     requestAnimationFrame(animate);
-
-    if (controls.isLocked) {
-        const time = performance.now();
-        const delta = (time - prevTime) / 1000;
-
-        velocity.x -= velocity.x * 10.0 * delta;
-        velocity.z -= velocity.z * 10.0 * delta;
-        velocity.y -= GRAVITY * delta;
-
-        direction.z = Number(moveForward) - Number(moveBackward);
-        direction.x = Number(moveRight) - Number(moveLeft);
-        direction.normalize();
-
-        if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
-        if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
-
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
-
-        controls.getObject().position.y += velocity.y * delta;
-
-        if (controls.getObject().position.y < 1.5) {
-            velocity.y = 0;
-            controls.getObject().position.y = 1.5;
-            canJump = true;
-        }
-
-        prevTime = time;
-    }
-
     renderer.render(scene, camera);
 }
-
-init();
-animate();
