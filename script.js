@@ -46,14 +46,14 @@ function init() {
 
     // North ramp
     const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    northRamp.position.set(0, 6, -17);
+    northRamp.position.set(0, 0, -17);
     northRamp.rotation.x = Math.PI / 4; // 45 degrees
     scene.add(northRamp);
     objects.push(northRamp);
 
     // South ramp
     const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    southRamp.position.set(0, 6, 17);
+    southRamp.position.set(0, 0, 17);
     southRamp.rotation.x = -Math.PI / 4;
     scene.add(southRamp);
     objects.push(southRamp);
@@ -61,43 +61,43 @@ function init() {
     // East ramp
     const eastRampGeometry = new THREE.BoxGeometry(14.14, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    eastRamp.position.set(17, 6, 0);
+    eastRamp.position.set(17, 0, 0);
     eastRamp.rotation.z = -Math.PI / 4;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     // West ramp
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    westRamp.position.set(-17, 6, 0);
+    westRamp.position.set(-17, 0, 0);
     westRamp.rotation.z = Math.PI / 4;
     scene.add(westRamp);
     objects.push(westRamp);
 
-    // Add corner blocks at the top
-    const blockGeometry = new THREE.BoxGeometry(5, 5, 5);
+    // Add corner platforms at ramp ends
+    const blockGeometry = new THREE.BoxGeometry(20, 1, 20);
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
     // Northeast block
     const neBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    neBlock.position.set(17, 13, -17);
+    neBlock.position.set(27, 10, -27);
     scene.add(neBlock);
     objects.push(neBlock);
 
     // Northwest block
     const nwBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    nwBlock.position.set(-17, 13, -17);
+    nwBlock.position.set(-27, 10, -27);
     scene.add(nwBlock);
     objects.push(nwBlock);
 
     // Southeast block
     const seBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    seBlock.position.set(17, 13, 17);
+    seBlock.position.set(27, 10, 27);
     scene.add(seBlock);
     objects.push(seBlock);
 
     // Southwest block
     const swBlock = new THREE.Mesh(blockGeometry, blockMaterial);
-    swBlock.position.set(-17, 13, 17);
+    swBlock.position.set(-27, 10, 27);
     scene.add(swBlock);
     objects.push(swBlock);
 
