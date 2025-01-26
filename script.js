@@ -6,6 +6,11 @@ let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 
+// Add velocity and speed variables
+const velocity = new THREE.Vector3();
+const direction = new THREE.Vector3();
+const speed = 100.0;
+
 init();
 
 function init() {
@@ -50,7 +55,8 @@ function init() {
     controls.addEventListener('unlock', function() {
         blocker.style.display = 'block';
         instructions.style.display = 'flex';
-        menu.style.display = 'flex';
+        // Remove this line to prevent menu reappearing
+        // menu.style.display = 'flex';
     });
 
     camera.position.y = 2;
@@ -106,5 +112,28 @@ function onKeyUp(event) {
 
 function animate() {
     requestAnimationFrame(animate);
+
+    // Add movement logic
+    if (controls.isLocked === true) {
+        const delta = 0.016; // Approximately 60 FPS
+
+        velocity.x = 0;
+        velocity.z = 0;
+
+        direction.z = Number(moveForward) - Number(moveBackward);
+        direction.x = Number(moveRight) - Number(moveLeft);
+        direction.normalize();
+
+        if (moveForward || moveBackward) {
+            velocity.z -= direction.z * speed * delta;
+        }
+        if (moveLeft || moveRight) {
+            velocity.x -= direction.x * speed * delta;
+        }
+
+        controls.moveRight(-velocity.x);
+        controls.moveForward(-velocity.z);
+    }
+
     renderer.render(scene, camera);
 }
