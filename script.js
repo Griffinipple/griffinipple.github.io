@@ -1,7 +1,8 @@
 // main.js
 
-const MOVEMENT_SPEED = 200; // Reduced from default
-const JUMP_FORCE = 250;
+const MOVEMENT_SPEED = 150; // Reduced speed
+const GRAVITY = 5.0; // Reduced from 9.8
+const JUMP_FORCE = 200;
 
 let camera, scene, renderer;
 let controls;
@@ -237,20 +238,50 @@ function animate() {
 
     if (controls.isLocked === true) {
         const time = performance.now();
-        const delta = (time - prevTime) / 1000; // Convert to seconds
+        const delta = (time - prevTime) / 1000;
 
-        // Apply damping (friction)
-        velocity.x -= velocity.x * 10.0 * delta;
-        velocity.z -= velocity.z * 10.0 * delta;
+        // Get camera's forward and right vectors
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+        const cameraRight = new THREE.Vector3();
+        cameraRight.crossVectors(camera.up, cameraDirection).normalize();
 
-        velocity.y -= 9.8 * 10.0 * delta; // Adjusted gravity
+        // Reset velocity
+        velocity.x -= velocity.x * 5.0 * delta;
+        velocity.z -= velocity.z * 5.0 * delta;
+        velocity.y -= GRAVITY * delta; // Reduced gravity
 
-        direction.z = Number(moveForward) - Number(moveBackward);
-        direction.x = Number(moveRight) - Number(moveLeft);
-        direction.normalize(); // Ensures consistent movement in all directions
+        // Calculate movement direction
+        direction.set(0, 0, 0);
+        
+        if (moveForward) {
+            direction.addScaledVector(cameraDirection, 1);
+        }
+        if (moveBackward) {
+            direction.addScaledVector(cameraDirection, -1);
+        }
+        if (moveRight) {
+            direction.addScaledVector(cameraRight, 1);
+        }
+        if (moveLeft) {
+            direction.addScaledVector(cameraRight, -1);
+        }
 
-        if (moveForward || moveBackward) velocity.z -= direction.z * MOVEMENT_SPEED * delta;
-        if (moveLeft || moveRight) velocity.x -= direction.x * MOVEMENT_SPEED * delta;
+        // Normalize direction and apply movement
+        direction.normalize();
+        if (moveForward || moveBackward) {
+            velocity.z = direction.z * MOVEMENT_SPEED;
+            velocity.x = direction.x * MOVEMENT_SPEED;
+        }
+        if (moveLeft || moveRight) {
+            velocity.z += direction.z * MOVEMENT_SPEED;
+            velocity.x += direction.x * MOVEMENT_SPEED;
+        }
+
+        // Apply movement
+        controls.moveRight(-velocity.x * delta);
+        controls.moveForward(-velocity.z * delta);
+        controls.getObject().position.y += velocity.y * delta;
 
         // Raycasting for collision detection
         raycaster.ray.origin.copy(controls.getObject().position);
