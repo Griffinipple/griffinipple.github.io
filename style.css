@@ -1,35 +1,37 @@
-/* styles.css */
-
-body, html {
+body {
     margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+    font-family: Arial, sans-serif;
     background-color: #000;
 }
 
-#game-container {
-    position: relative;
+#menu {
+    position: absolute;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0,0,0,0.8);
+    color: white;
 }
 
-canvas#gameCanvas {
-    width: 100%;
-    height: 100%;
-    display: block;
+#playButton {
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
 }
 
 #blocker {
-    display: none;
     position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    z-index: 100;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
 }
 
 #instructions {
@@ -39,27 +41,7 @@ canvas#gameCanvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #ffffff;
-    font-size: 24px;
     text-align: center;
-}
-
-#instructions p {
-    margin: 10px 0;
-}
-
-#instructions .note {
-    font-size: 16px;
-    opacity: 0.7;
-}
-
-#play-button {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px 20px;
-    font-size: 20px;
-    cursor: pointer;
-    z-index: 200; /* Ensure it appears above other elements */
+    font-size: 14px;
+    color: white;
 }
