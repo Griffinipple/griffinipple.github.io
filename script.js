@@ -190,7 +190,7 @@ function animate() {
 
         // Movement with collision checks
         if (moveForward || moveBackward) {
-            const moveDir = new THREE.Vector3(0, 0, -direction.z);
+            const moveDir = new THREE.Vector3(0, 0, direction.z); // Removed negative
             moveDir.applyQuaternion(camera.quaternion);
             moveDir.y = 0;
             moveDir.normalize();
@@ -199,12 +199,12 @@ function animate() {
             newPos.addScaledVector(moveDir, speed * delta);
             
             if (!checkCollision(camera.position, moveDir)) {
-                controls.moveForward(-direction.z * speed * delta);
+                controls.moveForward(direction.z * speed * delta); // Removed negative
             }
         }
 
         if (moveLeft || moveRight) {
-            const moveDir = new THREE.Vector3(-direction.x, 0, 0);
+            const moveDir = new THREE.Vector3(direction.x, 0, 0); // Removed negative
             moveDir.applyQuaternion(camera.quaternion);
             moveDir.y = 0;
             moveDir.normalize();
@@ -213,7 +213,7 @@ function animate() {
             newPos.addScaledVector(moveDir, speed * delta);
             
             if (!checkCollision(camera.position, moveDir)) {
-                controls.moveRight(-direction.x * speed * delta);
+                controls.moveRight(direction.x * speed * delta); // Removed negative
             }
         }
 
