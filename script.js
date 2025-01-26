@@ -86,11 +86,11 @@ function init() {
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
     const positions = [
-        [-40, -40], [-20, -40], [0, -40] [20, -40], [40, -40],  // Top row
+        [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],  // Top row
         [-40, -20], [-20, -20], [20, -20], [40, -20],  // Second row
         [-40, 0], [40, 0],                             // Middle row (excluding ramp positions)
         [-40, 20], [-20, 20], [20, 20], [40, 20],     // Fourth row
-        [-40, 40], [-20, 40], [0, 40] [20, 40], [40, 40]      // Bottom row
+        [-40, 40], [-20, 40], [0, 40], [20, 40], [40, 40]      // Bottom row
     ];
 
     positions.forEach(pos => {
