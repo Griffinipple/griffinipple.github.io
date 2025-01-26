@@ -5,8 +5,8 @@ const objects = [];
 const raycaster = new THREE.Raycaster();
 const rayDirection = new THREE.Vector3();
 const playerHeight = 2;
-const playerRadius = 0.8; // Increased for better collision
-const slopeThreshold = 60; // More lenient slope detection
+const playerRadius = 0.6; // Reduced from 0.8 for smoother collision
+const slopeThreshold = 45; // Reduced from 60 for better slope detection
 
 let moveForward = false;
 let moveBackward = false;
@@ -19,7 +19,7 @@ const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 const speed = 35.0; // Reduced from 50
 const jumpForce = 30; // Increased from 15
-const gravity = 30;
+const gravity = 25; // Reduced from 30 for better jump feel
 let yVelocity = 0;
 
 init();
@@ -242,20 +242,18 @@ function animate() {
         const delta = 0.016;
         const previousPosition = camera.position.clone();
 
+        // Ground check first
+        const onGround = checkGround(camera.position);
+
         // Apply gravity with slope consideration
         if (!onGround) {
             yVelocity -= gravity * delta;
         } else {
-            yVelocity = Math.max(-2, yVelocity); // Limit downward velocity on slopes
+            yVelocity = 0; // Reset velocity on ground
+            canJump = true;
         }
         
         camera.position.y += yVelocity * delta;
-
-        const onGround = checkGround(camera.position);
-        if (onGround) {
-            yVelocity = Math.max(yVelocity, 0); // Reset velocity if positive
-            canJump = true;
-        }
 
         velocity.x = 0;
         velocity.z = 0;
@@ -264,36 +262,35 @@ function animate() {
         direction.x = Number(moveRight) - Number(moveLeft);
         direction.normalize();
 
-        // Movement with collision checks
-        if (moveForward || moveBackward) {
-            const moveDir = new THREE.Vector3(0, 0, direction.z); // Removed negative
+        // Movement with improved collision checks
+        if (moveForward || moveBackward || moveLeft || moveRight) {
+            let moveDir = new THREE.Vector3();
+            
+            if (moveForward || moveBackward) {
+                moveDir.z = direction.z;
+            }
+            if (moveLeft || moveRight) {
+                moveDir.x = direction.x;
+            }
+
+            moveDir.normalize();
             moveDir.applyQuaternion(camera.quaternion);
             moveDir.y = 0;
-            moveDir.normalize();
             
             const newPos = camera.position.clone();
             newPos.addScaledVector(moveDir, speed * delta);
             
             if (!checkCollision(camera.position, moveDir)) {
-                controls.moveForward(direction.z * speed * delta); // Removed negative
+                if (moveForward || moveBackward) {
+                    controls.moveForward(direction.z * speed * delta);
+                }
+                if (moveLeft || moveRight) {
+                    controls.moveRight(direction.x * speed * delta);
+                }
             }
         }
 
-        if (moveLeft || moveRight) {
-            const moveDir = new THREE.Vector3(direction.x, 0, 0); // Removed negative
-            moveDir.applyQuaternion(camera.quaternion);
-            moveDir.y = 0;
-            moveDir.normalize();
-            
-            const newPos = camera.position.clone();
-            newPos.addScaledVector(moveDir, speed * delta);
-            
-            if (!checkCollision(camera.position, moveDir)) {
-                controls.moveRight(direction.x * speed * delta); // Removed negative
-            }
-        }
-
-        // Final collision check
+        // Simplified collision check
         const finalPosition = camera.position.clone();
         for (const obj of objects) {
             if (obj.geometry.boundingBox === undefined) {
@@ -304,7 +301,13 @@ function animate() {
             box.applyMatrix4(obj.matrixWorld);
             
             if (box.containsPoint(finalPosition)) {
-                camera.position.copy(previousPosition);
+                // Only reset position if we're not on a slope
+                const normal = new THREE.Vector3(0, 1, 0);
+                const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
+                
+                if (angle > slopeThreshold) {
+                    camera.position.copy(previousPosition);
+                }
                 break;
             }
         }
