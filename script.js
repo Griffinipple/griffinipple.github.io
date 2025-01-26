@@ -38,7 +38,10 @@ function checkWebGLSupport() {
 
 function createPlatform(width, height, depth, x, y, z, color) {
     const geometry = new THREE.BoxGeometry(width, height, depth);
-    const material = new THREE.MeshStandardMaterial({ color: color });
+    const material = new THREE.MeshPhongMaterial({ 
+        color: color,
+        shininess: 30
+    });
     const platform = new THREE.Mesh(geometry, material);
     platform.position.set(x, y, z);
     platform.receiveShadow = true;
@@ -92,12 +95,17 @@ function init() {
         
         // Scene setup
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xcce0ff);
+        scene.background = new THREE.Color(0x87ceeb); // Sky blue
+        
+        // Camera setup first
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10); // Move camera back to see scene
         
         // Renderer setup
         renderer = new THREE.WebGLRenderer({ 
             antialias: true,
-            alpha: false 
+            alpha: false,
+            powerPreference: "high-performance"
         });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -105,29 +113,24 @@ function init() {
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
         
-        // Camera setup
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.5, 0);
+        // Enhanced lighting
+        const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+        scene.add(hemisphereLight);
         
-        // Controls setup
-        controls = new THREE.PointerLockControls(camera, document.body);
-        scene.add(controls.getObject());
-        
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+        const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Increased intensity
         scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
         directionalLight.position.set(50, 50, 50);
         directionalLight.castShadow = true;
         directionalLight.shadow.mapSize.width = 2048;
         directionalLight.shadow.mapSize.height = 2048;
         scene.add(directionalLight);
         
-        // Create floor first
+        // Floor with visible material
         const floorGeometry = new THREE.PlaneGeometry(2000, 2000);
         const floorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x999999,
+            color: 0x808080,
             roughness: 0.8,
             metalness: 0.2
         });
@@ -138,18 +141,25 @@ function init() {
         scene.add(floor);
         objects.push(floor);
         
-        // Create obstacles after floor
+        // Create obstacles
         createObstacles();
+        
+        // Controls setup last
+        controls = new THREE.PointerLockControls(camera, document.body);
+        scene.add(controls.getObject());
         
         // Initialize raycaster
         raycaster = new THREE.Raycaster();
         
-        // Add window resize handler
-        window.addEventListener('resize', onWindowResize, false);
+        // Debug log
+        console.log('Scene initialized with:', {
+            objects: objects.length,
+            lights: scene.children.filter(child => child.isLight).length,
+            camera: camera.position
+        });
         
         // Start animation
         animate();
-        
         return true;
     } catch (error) {
         console.error('Init error:', error);
