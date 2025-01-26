@@ -10,8 +10,8 @@ let canJump = true;
 // Modify speed and add jump variables
 const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
-const speed = 50.0; // Reduced from 100
-const jumpForce = 15;
+const speed = 35.0; // Reduced from 50
+const jumpForce = 30; // Increased from 15
 const gravity = 30;
 let yVelocity = 0;
 
