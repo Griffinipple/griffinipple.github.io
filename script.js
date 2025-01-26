@@ -51,38 +51,38 @@ function init() {
     objects.push(platform);
 
     // Create ramps with adjusted length
-    const rampLength = 26; // Adjusted from 14.14
+    const rampLength = 25; // Adjusted from 14.14
     const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
     const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
     // Four ramps around center, positions adjusted to touch platforms
     const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
     northRamp.position.set(0, 4.5, -20);
-    northRamp.rotation.x = Math.PI / 6;
+    northRamp.rotation.x = Math.PI / 7;
     scene.add(northRamp);
     objects.push(northRamp);
 
     const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
     southRamp.position.set(0, 4.5, 20);
-    southRamp.rotation.x = -Math.PI / 6;
+    southRamp.rotation.x = -Math.PI / 7;
     scene.add(southRamp);
     objects.push(southRamp);
 
     const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     eastRamp.position.set(20, 4.5, 0);
-    eastRamp.rotation.z = Math.PI / 6;
+    eastRamp.rotation.z = Math.PI / 7;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
     westRamp.position.set(-20, 4.5, 0);
-    westRamp.rotation.z = -Math.PI / 6;
+    westRamp.rotation.z = -Math.PI / 7;
     scene.add(westRamp);
     objects.push(westRamp);
 
     // Create outer platforms (excluding positions above ramps)
-    const blockGeometry = new THREE.BoxGeometry(20, 1, 20);
+    const blockGeometry = new THREE.BoxGeometry(20, 20, 20);
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
     const positions = [
