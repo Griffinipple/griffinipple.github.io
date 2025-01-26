@@ -57,27 +57,27 @@ function init() {
 
     // Four ramps around center, positions adjusted to touch platforms
     const northRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    northRamp.position.set(0, 4.5, -10);
-    northRamp.rotation.x = -Math.PI / 4;
+    northRamp.position.set(0, 4.5, -20);
+    northRamp.rotation.x = Math.PI / 4;
     scene.add(northRamp);
     objects.push(northRamp);
 
     const southRamp = new THREE.Mesh(rampGeometry, rampMaterial);
-    southRamp.position.set(0, 4.5, 10);
-    southRamp.rotation.x = Math.PI / 4;
+    southRamp.position.set(0, 4.5, 20);
+    southRamp.rotation.x = -Math.PI / 4;
     scene.add(southRamp);
     objects.push(southRamp);
 
     const eastRampGeometry = new THREE.BoxGeometry(rampLength, 1, 20);
     const eastRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    eastRamp.position.set(10, 4.5, 0);
-    eastRamp.rotation.z = -Math.PI / 4;
+    eastRamp.position.set(20, 4.5, 0);
+    eastRamp.rotation.z = Math.PI / 4;
     scene.add(eastRamp);
     objects.push(eastRamp);
 
     const westRamp = new THREE.Mesh(eastRampGeometry, rampMaterial);
-    westRamp.position.set(-10, 4.5, 0);
-    westRamp.rotation.z = Math.PI / 4;
+    westRamp.position.set(-20, 4.5, 0);
+    westRamp.rotation.z = -Math.PI / 4;
     scene.add(westRamp);
     objects.push(westRamp);
 
@@ -86,11 +86,11 @@ function init() {
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
     const positions = [
-        [-40, -40], [-20, -40], [20, -40], [40, -40],  // Top row
+        [-40, -40], [-20, -40], [0, -40] [20, -40], [40, -40],  // Top row
         [-40, -20], [-20, -20], [20, -20], [40, -20],  // Second row
         [-40, 0], [40, 0],                             // Middle row (excluding ramp positions)
         [-40, 20], [-20, 20], [20, 20], [40, 20],     // Fourth row
-        [-40, 40], [-20, 40], [20, 40], [40, 40]      // Bottom row
+        [-40, 40], [-20, 40], [0, 40] [20, 40], [40, 40]      // Bottom row
     ];
 
     positions.forEach(pos => {
