@@ -86,39 +86,50 @@ function createObstacles() {
 
 function init() {
     try {
-        // WebGL check...
+        if (!checkWebGLSupport()) {
+            throw new Error('WebGL not supported');
+        }
         
         // Scene setup
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0xcce0ff);
         
-        // Camera setup
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.y = 1.5;
-        
         // Renderer setup
-        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            alpha: false 
+        });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         document.body.appendChild(renderer.domElement);
+        
+        // Camera setup
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.5, 0);
         
         // Controls setup
         controls = new THREE.PointerLockControls(camera, document.body);
         scene.add(controls.getObject());
         
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040);
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(1, 1, 1);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
         scene.add(directionalLight);
         
-        // Create floor
+        // Create floor first
         const floorGeometry = new THREE.PlaneGeometry(2000, 2000);
         const floorMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x999999,
-            roughness: 0.8
+            roughness: 0.8,
+            metalness: 0.2
         });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
@@ -127,11 +138,14 @@ function init() {
         scene.add(floor);
         objects.push(floor);
         
-        // Create obstacles
+        // Create obstacles after floor
         createObstacles();
         
         // Initialize raycaster
         raycaster = new THREE.Raycaster();
+        
+        // Add window resize handler
+        window.addEventListener('resize', onWindowResize, false);
         
         // Start animation
         animate();
