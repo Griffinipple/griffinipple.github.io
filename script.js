@@ -86,91 +86,61 @@ function createObstacles() {
 
 function init() {
     try {
-        // WebGL support check
-        const testCanvas = document.createElement('canvas');
-        const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+        // WebGL check...
         
-        if (!gl) {
-            throw new Error('WebGL is not supported in your browser');
-        }
-
-        // Get or create canvas
-        let canvas = document.getElementById('gameCanvas');
-        if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.id = 'gameCanvas';
-            const container = document.getElementById('game-container');
-            if (!container) {
-                throw new Error('Game container not found');
-            }
-            container.appendChild(canvas);
-        }
-
-        // Initialize scene once
+        // Scene setup
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0xcce0ff);
-
-        // Initialize renderer once
-        renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas,
-            antialias: true,
-            alpha: true
-        });
+        
+        // Camera setup
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+        camera.position.y = 1.5;
+        
+        // Renderer setup
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
         
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        });
-
-        // Add lights
-        const light = new THREE.HemisphereLight(0xffffff, 0x444444);
-        light.position.set(0, 20, 0);
-        scene.add(light);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff);
-        directionalLight.position.set(-10, 20, 10);
-        scene.add(directionalLight);
-
-        // Add PointerLockControls
+        // Controls setup
+        controls = new THREE.PointerLockControls(camera, document.body);
         scene.add(controls.getObject());
-
-        // Create the ground
-        const floorGeometry = new THREE.PlaneGeometry(200, 200);
-        const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+        
+        // Create floor
+        const floorGeometry = new THREE.PlaneGeometry(2000, 2000);
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x999999,
+            roughness: 0.8
+        });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
+        floor.position.y = 0;
         floor.receiveShadow = true;
         scene.add(floor);
         objects.push(floor);
-
-        // Create obstacles after floor creation
+        
+        // Create obstacles
         createObstacles();
-
-        // Raycaster for collision detection
-        raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 1.5);
-
-        // Add event listeners for keyboard input
-        document.addEventListener('keydown', onKeyDown, false);
-        document.addEventListener('keyup', onKeyUp, false);
-
-        // Start the animation loop
+        
+        // Initialize raycaster
+        raycaster = new THREE.Raycaster();
+        
+        // Start animation
         animate();
+        
+        return true;
     } catch (error) {
-        console.error('Initialization failed:', error);
-        const errorDisplay = document.getElementById('game-container') || document.body;
-        const errorMessage = document.createElement('div');
-        errorMessage.style.color = 'red';
-        errorMessage.innerHTML = `Error: ${error.message}`;
-        errorDisplay.appendChild(errorMessage);
+        console.error('Init error:', error);
         return false;
     }
-    return true;
 }
 
 function onWindowResize() {
@@ -408,13 +378,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (playButton && blocker && instructions) {
         playButton.addEventListener('click', () => {
-            playButton.style.display = 'none';
-            blocker.style.display = 'block';
-            instructions.style.display = 'block';
-            try {
-                init();
-            } catch(e) {
-                console.error('Failed to start game:', e);
+            const success = init();
+            if (success) {
+                playButton.style.display = 'none';
+                controls.lock();
             }
         });
 
@@ -425,7 +392,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         controls.addEventListener('unlock', () => {
             blocker.style.display = 'block';
-            instructions.style.display = '';
+            instructions.style.display = 'block';
         });
 
         instructions.addEventListener('click', () => {
