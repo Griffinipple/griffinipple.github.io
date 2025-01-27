@@ -94,6 +94,7 @@ function init() {
     // Event listeners for movement
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
+    document.addEventListener('mousedown', onMouseDown); // Add event listener for mouse down
 
     // Add bounding boxes to all objects
     objects.forEach(obj => {
@@ -192,9 +193,6 @@ function onKeyDown(event) {
                 canJump = false;
             }
             break;
-        case 'KeyF': // Launch ball with 'F' key
-            launchBallProjectile();
-            break;
     }
 }
 
@@ -216,6 +214,12 @@ function onKeyUp(event) {
         case 'KeyD':
             moveRight = false;
             break;
+    }
+}
+
+function onMouseDown(event) {
+    if (event.button === 0) { // Check if the left mouse button was pressed
+        launchBallProjectile();
     }
 }
 
