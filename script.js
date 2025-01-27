@@ -26,337 +26,371 @@ const airControl = 0.3;
 let yVelocity = 0;
 
 let moveState = {
-    grounded: false,
-    sliding: false,
-    velocity: new THREE.Vector3()
+  grounded: false,
+  sliding: false,
+  velocity: new THREE.Vector3(),
 };
 
 init();
 
 function init() {
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-    // Create first spawn area (original)
-    createSpawnArea(0, 0);
-    
-    // Create second spawn area (north)
-    createSpawnArea(0, -200);
-    
-    // Create connecting bridge
-    const bridgeGeometry = new THREE.BoxGeometry(60, 1, 120);
-    const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
-    const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
-    bridge.position.set(0, 9, -100);
-    scene.add(bridge);
-    objects.push(bridge);
+  // Create first spawn area (original)
+  createSpawnArea(0, 0);
 
-    // Lighting
-    const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
-    scene.add(light);
+  // Create second spawn area (north)
+  createSpawnArea(0, -200);
 
-    // Controls
-    controls = new THREE.PointerLockControls(camera, document.body);
+  // Create connecting bridge
+  const bridgeGeometry = new THREE.BoxGeometry(60, 1, 120);
+  const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
+  const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+  bridge.position.set(0, 9, -100);
+  scene.add(bridge);
+  objects.push(bridge);
 
-    const blocker = document.getElementById('blocker');
-    const instructions = document.getElementById('instructions');
-    const menu = document.getElementById('menu');
-    const playButton = document.getElementById('playButton');
+  // Lighting
+  const light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+  scene.add(light);
 
-    playButton.addEventListener('click', function() {
-        controls.lock();
-        menu.style.display = 'none';
-    });
+  // Controls
+  controls = new THREE.PointerLockControls(camera, document.body);
 
-    controls.addEventListener('lock', function() {
-        instructions.style.display = 'none';
-        blocker.style.display = 'none';
-    });
+  const blocker = document.getElementById('blocker');
+  const instructions = document.getElementById('instructions');
+  const menu = document.getElementById('menu');
+  const playButton = document.getElementById('playButton');
 
-    controls.addEventListener('unlock', function() {
-        blocker.style.display = 'block';
-        instructions.style.display = 'flex';
-        // Remove this line to prevent menu reappearing
-        // menu.style.display = 'flex';
-    });
+  playButton.addEventListener('click', function() {
+    controls.lock();
+    menu.style.display = 'none';
+  });
 
-    instructions.addEventListener('click', function() {
-        controls.lock();
-    });
+  controls.addEventListener('lock', function() {
+    instructions.style.display = 'none';
+    blocker.style.display = 'none';
+  });
 
-    camera.position.y = 2;
+  controls.addEventListener('unlock', function() {
+    blocker.style.display = 'block';
+    instructions.style.display = 'flex';
+    // Remove this line to prevent menu reappearing
+    // menu.style.display = 'flex';
+  });
 
-    // Event listeners for movement
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
+  instructions.addEventListener('click', function() {
+    controls.lock();
+  });
 
-    // Add bounding boxes to all objects
-    objects.forEach(obj => {
-        obj.geometry.computeBoundingBox();
-    });
+  camera.position.y = 2;
 
-    animate();
+  // Event listeners for movement
+  document.addEventListener('keydown', onKeyDown);
+  document.addEventListener('keyup', onKeyUp);
+  document.addEventListener('click', shoot); // Add click event listener
+
+  // Add bounding boxes to all objects
+  objects.forEach(obj => {
+    obj.geometry.computeBoundingBox();
+  });
+
+  animate();
 }
 
 function createSpawnArea(offsetX, offsetZ) {
-    // Center platform
-    const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
-    const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
-    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    platform.position.set(offsetX, -1, offsetZ);
-    scene.add(platform);
-    objects.push(platform);
+  // Center platform
+  const platformGeometry = new THREE.BoxGeometry(20, 1, 20);
+  const platformMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+  const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+  platform.position.set(offsetX, -1, offsetZ);
+  scene.add(platform);
+  objects.push(platform);
 
-    // Four ramps
-    const rampLength = 22.4;
-    const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
-    const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
+  // Four ramps
+  const rampLength = 22.4;
+  const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
+  const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
-    // Ramps (adjusted for offset)
-    const ramps = [
-        { pos: [0, -20], rot: Math.PI / 6.3, axis: 'x' },
-        { pos: [0, 20], rot: -Math.PI / 6.3, axis: 'x' },
-        { pos: [20, 0], rot: Math.PI / 6.3, axis: 'z' },
-        { pos: [-20, 0], rot: -Math.PI / 6.3, axis: 'z' }
-    ];
+  // Ramps (adjusted for offset)
+  const ramps = [
+    { pos: [0, -20], rot: Math.PI / 6.3, axis: 'x' },
+    { pos: [0, 20], rot: -Math.PI / 6.3, axis: 'x' },
+    { pos: [20, 0], rot: Math.PI / 6.3, axis: 'z' },
+    { pos: [-20, 0], rot: -Math.PI / 6.3, axis: 'z' }
+  ];
 
-    ramps.forEach(ramp => {
-        const rampMesh = new THREE.Mesh(
-            ramp.axis === 'x' ? rampGeometry : new THREE.BoxGeometry(rampLength, 1, 20),
-            rampMaterial
-        );
-        rampMesh.position.set(
-            offsetX + ramp.pos[0],
-            4.5,
-            offsetZ + ramp.pos[1]
-        );
-        if (ramp.axis === 'x') {
-            rampMesh.rotation.x = ramp.rot;
-        } else {
-            rampMesh.rotation.z = ramp.rot;
-        }
-        scene.add(rampMesh);
-        objects.push(rampMesh);
-    });
+  ramps.forEach(ramp => {
+    const rampMesh = new THREE.Mesh(
+      ramp.axis === 'x' ? rampGeometry : new THREE.BoxGeometry(rampLength, 1, 20),
+      rampMaterial
+    );
+    rampMesh.position.set(
+      offsetX + ramp.pos[0],
+      4.5,
+      offsetZ + ramp.pos[1]
+    );
+    if (ramp.axis === 'x') {
+      rampMesh.rotation.x = ramp.rot;
+    } else {
+      rampMesh.rotation.z = ramp.rot;
+    }
+    scene.add(rampMesh);
+    objects.push(rampMesh);
+  });
 
-    // Surrounding platforms
-    const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
-    const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
-    
-    const positions = [
-        [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],
-        [-40, -20], [-20, -20], [20, -20], [40, -20],
-        [-40, 0], [40, 0],
-        [-40, 20], [-20, 20], [20, 20], [40, 20],
-        [-40, 40], [-20, 40], [0, 40], [20, 40], [40, 40]
-    ];
+  // Surrounding platforms
+  const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
+  const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
 
-    positions.forEach(pos => {
-        const block = new THREE.Mesh(blockGeometry, blockMaterial);
-        block.position.set(
-            offsetX + pos[0],
-            5,
-            offsetZ + pos[1]
-        );
-        scene.add(block);
-        objects.push(block);
-    });
+  const positions = [
+    [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],
+    [-40, -20], [-20, -20], [20, -20], [40, -20],
+    [-40, 0], [40, 0],
+    [-40, 20], [-20, 20], [20, 20], [40, 20],
+    [-40, 40], [-20, 40], [0, 40], [20, 40], [40, 40]
+  ];
+
+  positions.forEach(pos => {
+    const block = new THREE.Mesh(blockGeometry, blockMaterial);
+    block.position.set(
+      offsetX + pos[0],
+      5,
+      offsetZ + pos[1]
+    );
+    scene.add(block);
+    objects.push(block);
+  });
 }
 
 function onKeyDown(event) {
-    switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-            moveForward = true;
-            break;
-        case 'ArrowDown':
-        case 'KeyS':
-            moveBackward = true;
-            break;
-        case 'ArrowLeft':
-        case 'KeyA':
-            moveLeft = true;
-            break;
-        case 'ArrowRight':
-        case 'KeyD':
-            moveRight = true;
-            break;
-        case 'Space':
-            if (canJump) {
-                yVelocity = jumpForce;
-                canJump = false;
-            }
-            break;
-    }
+  switch (event.code) {
+    case 'ArrowUp':
+    case 'KeyW':
+      moveForward = true;
+      break;
+    case 'ArrowDown':
+    case 'KeyS':
+      moveBackward = true;
+      break;
+    case 'ArrowLeft':
+    case 'KeyA':
+      moveLeft = true;
+      break;
+    case 'ArrowRight':
+    case 'KeyD':
+      moveRight = true;
+      break;
+    case 'Space':
+      if (canJump) {
+        yVelocity = jumpForce;
+        canJump = false;
+      }
+      break;
+  }
 }
 
 function onKeyUp(event) {
-    switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-            moveForward = false;
-            break;
-        case 'ArrowDown':
-        case 'KeyS':
-            moveBackward = false;
-            break;
-        case 'ArrowLeft':
-        case 'KeyA':
-            moveLeft = false;
-            break;
-        case 'ArrowRight':
-        case 'KeyD':
-            moveRight = false;
-            break;
-    }
+  switch (event.code) {
+    case 'ArrowUp':
+    case 'KeyW':
+      moveForward = false;
+      break;
+    case 'ArrowDown':
+    case 'KeyS':
+      moveBackward = false;
+      break;
+    case 'ArrowLeft':
+    case 'KeyA':
+      moveLeft = false;
+      break;
+    case 'KeyRight':
+    case 'KeyD':
+      moveRight = false;
+      break;
+  }
 }
 
 function checkCollision(position, direction) {
-    raycaster.ray.origin.copy(position);
-    raycaster.ray.direction.copy(direction);
-    const intersects = raycaster.intersectObjects(objects);
-    
-    if (intersects.length > 0) {
-        const normal = intersects[0].face.normal;
-        const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
-        
-        // Allow movement up slopes
-        if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 1.5) {
-            return true;
-        }
-        // Regular collision for walls
-        return intersects[0].distance < playerRadius;
+  raycaster.ray.origin.copy(position);
+  raycaster.ray.direction.copy(direction);
+  const intersects = raycaster.intersectObjects(objects);
+
+  if (intersects.length > 0) {
+    const normal = intersects[0].face.normal;
+    const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
+
+    // Allow movement up slopes
+    if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 1.5) {
+      return true;
     }
-    return false;
+    // Regular collision for walls
+    return intersects[0].distance < playerRadius;
+  }
+  return false;
 }
 
 function checkGround(position) {
-    raycaster.ray.origin.copy(position);
-    raycaster.ray.direction.set(0, -1, 0);
-    const intersects = raycaster.intersectObjects(objects);
-    
-    // More generous ground check distance
-    const groundCheckDistance = playerHeight + 0.1; // Small buffer added
-    
-    if (intersects.length > 0 && intersects[0].distance < groundCheckDistance) {
-        const normal = intersects[0].face.normal;
-        const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
-        
-        // More lenient slope check for jumping
-        if (angle <= slopeThreshold) {
-            camera.position.y = intersects[0].point.y + playerHeight;
-            return true;
-        }
+  raycaster.ray.origin.copy(position);
+  raycaster.ray.direction.set(0, -1, 0);
+  const intersects = raycaster.intersectObjects(objects);
+
+  // More generous ground check distance
+  const groundCheckDistance = playerHeight + 0.1; // Small buffer added
+
+  if (intersects.length > 0 && intersects[0].distance < groundCheckDistance) {
+    const normal = intersects[0].face.normal;
+    const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
+
+    // More lenient slope check for jumping
+    if (angle <= slopeThreshold) {
+      camera.position.y = intersects[0].point.y + playerHeight;
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
 function updateMovement(delta) {
-    const previousPosition = camera.position.clone();
-    moveState.grounded = checkGround(camera.position);
+  const previousPosition = camera.position.clone();
+  moveState.grounded = checkGround(camera.position);
 
-    // Apply friction
-    if (moveState.grounded) {
-        moveState.velocity.x *= 1.0 - Math.min(friction * delta, 1);
-        moveState.velocity.z *= 1.0 - Math.min(friction * delta, 1);
-    }
+  // Apply friction
+  if (moveState.grounded) {
+    moveState.velocity.x *= 1.0 - Math.min(friction * delta, 1);
+    moveState.velocity.z *= 1.0 - Math.min(friction * delta, 1);
+  }
 
-    // Calculate desired movement
-    let input = new THREE.Vector3(
-        Number(moveRight) - Number(moveLeft),
-        0,
-        Number(moveForward) - Number(moveBackward)
-    ).normalize();
+  // Calculate desired movement
+  let input = new THREE.Vector3(
+    Number(moveRight) - Number(moveLeft),
+    0,
+    Number(moveForward) - Number(moveBackward)
+  ).normalize();
 
-    // Apply movement forces
-    if (input.length() > 0) {
-        let accel = acceleration;
-        if (!moveState.grounded) accel *= airControl;
+  // Apply movement forces
+  if (input.length() > 0) {
+    let accel = acceleration;
+    if (!moveState.grounded) accel *= airControl;
 
-        input.applyQuaternion(camera.quaternion);
-        input.y = 0;
-        input.normalize();
+    input.applyQuaternion(camera.quaternion);
+    input.y = 0;
+    input.normalize();
 
-        moveState.velocity.x += input.x * accel * delta;
-        moveState.velocity.z += input.z * accel * delta;
-    }
+    moveState.velocity.x += input.x * accel * delta;
+    moveState.velocity.z += input.z * accel * delta;
+  }
 
-    // Apply speed limit
-    const speedLimit = speed;
-    const horizontalVelocity = new THREE.Vector2(moveState.velocity.x, moveState.velocity.z);
-    if (horizontalVelocity.length() > speedLimit) {
-        horizontalVelocity.normalize().multiplyScalar(speedLimit);
-        moveState.velocity.x = horizontalVelocity.x;
-        moveState.velocity.z = horizontalVelocity.y;
-    }
+  // Apply speed limit
+  const speedLimit = speed;
+  const horizontalVelocity = new THREE.Vector2(moveState.velocity.x, moveState.velocity.z);
+  if (horizontalVelocity.length() > speedLimit) {
+    horizontalVelocity.normalize().multiplyScalar(speedLimit);
+    moveState.velocity.x = horizontalVelocity.x;
+    moveState.velocity.z = horizontalVelocity.y;
+  }
 
-    // Apply movement with collision check
-    const movement = moveState.velocity.clone().multiplyScalar(delta);
-    if (!checkCollision(camera.position, movement.normalize())) {
-        camera.position.add(movement);
-    } else {
-        moveState.velocity.multiplyScalar(0.5);
-    }
+  // Apply movement with collision check
+  const movement = moveState.velocity.clone().multiplyScalar(delta);
+  if (!checkCollision(camera.position, movement.normalize())) {
+    camera.position.add(movement);
+  } else {
+    moveState.velocity.multiplyScalar(0.5);
+  }
 }
 
 function animate() {
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-    if (controls.isLocked === true) {
-        const delta = 0.016;
+  if (controls.isLocked === true) {
+    const delta = 0.016;
 
-        // Ground check and gravity
-        const onGround = checkGround(camera.position);
-        if (onGround) {
-            canJump = true;
-            if (yVelocity < 0) yVelocity = 0;
-        } else {
-            yVelocity -= gravity * delta;
-        }
-        
-        camera.position.y += yVelocity * delta;
-
-        // Movement
-        velocity.x = 0;
-        velocity.z = 0;
-
-        if (moveForward) velocity.z -= speed;
-        if (moveBackward) velocity.z += speed;
-        if (moveLeft) velocity.x -= speed;
-        if (moveRight) velocity.x += speed;
-
-        // Apply movement relative to camera direction, but only horizontally
-        if (velocity.x !== 0 || velocity.z !== 0) {
-            let moveVector = new THREE.Vector3(velocity.x, 0, velocity.z);
-            moveVector.normalize();
-            moveVector.multiplyScalar(speed * delta);
-            
-            // Get camera's forward direction and project it onto XZ plane
-            let cameraDirection = new THREE.Vector3();
-            camera.getWorldDirection(cameraDirection);
-            cameraDirection.y = 0;
-            cameraDirection.normalize();
-            
-            // Create rotation quaternion from flattened camera direction
-            let rotationMatrix = new THREE.Matrix4();
-            rotationMatrix.lookAt(new THREE.Vector3(), cameraDirection, new THREE.Vector3(0, 1, 0));
-            let rotationQuaternion = new THREE.Quaternion();
-            rotationQuaternion.setFromRotationMatrix(rotationMatrix);
-            
-            // Apply horizontal rotation to movement
-            moveVector.applyQuaternion(rotationQuaternion);
-            
-            // Check collision before moving
-            if (!checkCollision(camera.position, moveVector)) {
-                camera.position.add(moveVector);
-            }
-        }
+    // Ground check and gravity
+    const onGround = checkGround(camera.position);
+    if (onGround) {
+      canJump = true;
+      if (yVelocity < 0) yVelocity = 0;
+    } else {
+      yVelocity -= gravity * delta;
     }
 
-    renderer.render(scene, camera);
+    camera.position.y += yVelocity * delta;
+
+    // Movement
+    velocity.x = 0;
+    velocity.z = 0;
+
+    if (moveForward) velocity.z -= speed;
+    if (moveBackward) velocity.z += speed;
+    if (moveLeft) velocity.x -= speed;
+    if (moveRight) velocity.x += speed;
+
+    // Apply movement relative to camera direction, but only horizontally
+    if (velocity.x !== 0 || velocity.z !== 0) {
+      let moveVector = new THREE.Vector3(velocity.x, 0, velocity.z);
+      moveVector.normalize();
+      moveVector.multiplyScalar(speed * delta);
+
+      // Get camera's forward direction and project it onto XZ plane
+      let cameraDirection = new THREE.Vector3();
+      camera.getWorldDirection(cameraDirection);
+      cameraDirection.y = 0;
+      cameraDirection.normalize();
+
+      // Create rotation quaternion from flattened camera direction
+      let rotationMatrix = new THREE.Matrix4();
+      rotationMatrix.lookAt(new THREE.Vector3(), cameraDirection, new THREE.Vector3(0, 1, 0));
+      let rotationQuaternion = new THREE.Quaternion();
+      rotationQuaternion.setFromRotationMatrix(rotationMatrix);
+
+      // Apply horizontal rotation to movement
+      moveVector.applyQuaternion(rotationQuaternion);
+
+      // Check collision before moving
+      if (!checkCollision(camera.position, moveVector)) {
+        camera.position.add(moveVector);
+      }
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+
+function shoot() {
+  // Create a sphere geometry for the ball
+  const ballGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+  const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+
+  // Position the ball in front of the camera
+  ball.position.copy(camera.position);
+  ball.position.add(camera.getWorldDirection().multiplyScalar(2)); 
+
+  // Add the ball to the scene
+  scene.add(ball);
+
+  // Calculate the direction of the shot
+  const direction = camera.getWorldDirection().clone();
+
+  // Set the ball's velocity
+  ball.velocity = direction.multiplyScalar(115); // Adjust speed as needed
+
+  // Function to update the ball's position
+  function updateBall() {
+    ball.position.add(ball.velocity);
+
+    // Remove the ball after a certain distance
+    if (ball.position.distanceTo(camera.position) > 115) {
+      scene.remove(ball);
+    }
+  }
+
+  // Add the update function to the animation loop
+  animate.updateBall = updateBall;
 }
