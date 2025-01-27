@@ -113,7 +113,7 @@ function createSpawnArea(offsetX, offsetZ) {
     objects.push(platform);
 
     // Four ramps
-    const rampLength = 22.5;
+    const rampLength = 22.2;
     const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
     const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
