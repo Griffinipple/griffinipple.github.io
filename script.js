@@ -49,7 +49,7 @@ function init() {
     createSpawnArea(0, -200);
     
     // Create connecting bridge
-    const bridgeGeometry = new THREE.BoxGeometry(20, 1, 120);
+    const bridgeGeometry = new THREE.BoxGeometry(60, 1, 120);
     const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
     const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
     bridge.position.set(0, 9, -100);
@@ -113,7 +113,7 @@ function createSpawnArea(offsetX, offsetZ) {
     objects.push(platform);
 
     // Four ramps
-    const rampLength = 22.2;
+    const rampLength = 22.4;
     const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
     const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
