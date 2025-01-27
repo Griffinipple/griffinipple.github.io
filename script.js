@@ -1,7 +1,5 @@
 let camera, scene, renderer, controls;
 const objects = [];
-let healthBar;
-let playerHealth = 100;
 
 // Add raycaster
 const raycaster = new THREE.Raycaster();
@@ -59,21 +57,7 @@ function init() {
     crosshair.style.left = '50%';
     crosshair.style.marginTop = '-10px';
     crosshair.style.marginLeft = '-10px';
-    crosshair.style.display = 'none'; // Initially hidden
     document.body.appendChild(crosshair);
-
-    // Create health bar element
-    healthBar = document.createElement('div');
-    healthBar.id = 'healthBar';
-    healthBar.style.position = 'absolute';
-    healthBar.style.width = '200px';
-    healthBar.style.height = '20px';
-    healthBar.style.backgroundColor = 'red';
-    healthBar.style.bottom = '10px';
-    healthBar.style.left = '50%';
-    healthBar.style.marginLeft = '-100px';
-    healthBar.style.display = 'none'; // Initially hidden
-    document.body.appendChild(healthBar);
 
     // Change void color to blue
     document.body.style.backgroundColor = 'blue';
@@ -112,15 +96,11 @@ function init() {
     controls.addEventListener('lock', function() {
         instructions.style.display = 'none';
         blocker.style.display = 'none';
-        crosshair.style.display = 'block'; // Show crosshair
-        healthBar.style.display = 'block'; // Show health bar
     });
 
     controls.addEventListener('unlock', function() {
         blocker.style.display = 'block';
         instructions.style.display = 'flex';
-        crosshair.style.display = 'none'; // Hide crosshair
-        healthBar.style.display = 'none'; // Hide health bar
         // Remove this line to prevent menu reappearing
         // menu.style.display = 'flex';
     });
@@ -466,9 +446,6 @@ function animate() {
 
         // Update ball projectiles
         updateBallProjectiles(delta);
-    } else {
-        // Ensure projectiles are still updated even when controls are not locked
-        updateBallProjectiles(0.016);
     }
 
     renderer.render(scene, camera);
