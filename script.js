@@ -358,6 +358,19 @@ function launchBallProjectile() {
     createBallProjectile(position, direction);
 }
 
+// Function to handle projectile collision
+function handleProjectileCollision(ball) {
+    const intersects = raycaster.intersectObjects(objects);
+    if (intersects.length > 0) {
+        // Remove the ball from the scene and the array
+        scene.remove(ball);
+        const index = ballProjectiles.indexOf(ball);
+        if (index > -1) {
+            ballProjectiles.splice(index, 1);
+        }
+    }
+}
+
 // Update ball projectiles in the animate function
 function updateBallProjectiles(delta) {
     for (let i = ballProjectiles.length - 1; i >= 0; i--) {
@@ -366,8 +379,11 @@ function updateBallProjectiles(delta) {
         ball.position.add(travelStep);
         ball.travelDistance += travelStep.length(); // Accumulate travel distance
 
+        // Check for collision
+        handleProjectileCollision(ball);
+
         // Remove ball if it goes out of bounds or exceeds travel distance limit
-        if (ball.travelDistance > ballDistanceLimit || checkCollision(ball.position, ball.velocity)) {
+        if (ball.travelDistance > ballDistanceLimit) {
             scene.remove(ball);
             ballProjectiles.splice(i, 1);
         }
