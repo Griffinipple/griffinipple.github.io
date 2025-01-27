@@ -42,6 +42,11 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // Create crosshair element
+    const crosshair = document.createElement('div');
+    crosshair.id = 'crosshair';
+    document.body.appendChild(crosshair);
+
     // Create first spawn area (original)
     createSpawnArea(0, 0);
     
