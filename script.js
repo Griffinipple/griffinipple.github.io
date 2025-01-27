@@ -31,6 +31,37 @@ let moveState = {
     velocity: new THREE.Vector3()
 };
 
+// Health bar management
+let health = 100; // Initial health
+let lastHitTime = Date.now();
+
+function updateHealthBar() {
+    const healthBar = document.getElementById('health-bar');
+    healthBar.style.width = health + '%';
+}
+
+function takeDamage(damage) {
+    health -= damage;
+    if (health < 0) health = 0;
+    lastHitTime = Date.now();
+    updateHealthBar();
+}
+
+function heal(amount) {
+    health += amount;
+    if (health > 100) health = 100;
+    updateHealthBar();
+}
+
+// Heal the player 5 health every second after 5 seconds of not being hit
+function autoHeal() {
+    const currentTime = Date.now();
+    if (currentTime - lastHitTime >= 5000) { // 5 seconds of not being hit
+        heal(5);
+        lastHitTime = currentTime; // Reset the timer after healing
+    }
+}
+
 init();
 
 function init() {
@@ -168,7 +199,7 @@ function createSpawnArea(offsetX, offsetZ) {
     // Surrounding platforms
     const blockGeometry = new THREE.BoxGeometry(20, 10, 20);
     const blockMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
-    
+
     const positions = [
         [-40, -40], [-20, -40], [0, -40], [20, -40], [40, -40],
         [-40, -20], [-20, -20], [20, -20], [40, -20],
@@ -247,11 +278,11 @@ function checkCollision(position, direction) {
     raycaster.ray.origin.copy(position);
     raycaster.ray.direction.copy(direction);
     const intersects = raycaster.intersectObjects(objects);
-    
+
     if (intersects.length > 0) {
         const normal = intersects[0].face.normal;
         const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
-        
+
         // Allow movement up slopes
         if (angle <= slopeThreshold && intersects[0].distance < playerRadius * 1.5) {
             return true;
@@ -266,14 +297,14 @@ function checkGround(position) {
     raycaster.ray.origin.copy(position);
     raycaster.ray.direction.set(0, -1, 0);
     const intersects = raycaster.intersectObjects(objects);
-    
+
     // More generous ground check distance
     const groundCheckDistance = playerHeight + 0.1; // Small buffer added
-    
+
     if (intersects.length > 0 && intersects[0].distance < groundCheckDistance) {
         const normal = intersects[0].face.normal;
         const angle = THREE.MathUtils.radToDeg(Math.acos(normal.dot(new THREE.Vector3(0, 1, 0))));
-        
+
         // More lenient slope check for jumping
         if (angle <= slopeThreshold) {
             camera.position.y = intersects[0].point.y + playerHeight;
@@ -446,6 +477,9 @@ function animate() {
 
         // Update ball projectiles
         updateBallProjectiles(delta);
+
+        // Auto Heal
+        autoHeal();
     }
 
     renderer.render(scene, camera);
