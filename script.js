@@ -466,6 +466,9 @@ function animate() {
 
         // Update ball projectiles
         updateBallProjectiles(delta);
+    } else {
+        // Ensure projectiles are still updated even when controls are not locked
+        updateBallProjectiles(0.016);
     }
 
     renderer.render(scene, camera);
