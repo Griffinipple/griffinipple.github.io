@@ -192,6 +192,9 @@ function onKeyDown(event) {
                 canJump = false;
             }
             break;
+        case 'KeyF': // Launch ball with 'F' key
+            launchBallProjectile();
+            break;
     }
 }
 
@@ -304,6 +307,46 @@ function updateMovement(delta) {
     }
 }
 
+// Define ball projectile properties
+const ballRadius = 0.5;
+const ballSpeed = 50;
+const ballProjectiles = [];
+
+// Function to create a ball projectile
+function createBallProjectile(position, direction) {
+    const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
+    const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+
+    ball.position.copy(position);
+    ball.velocity = direction.clone().multiplyScalar(ballSpeed);
+    scene.add(ball);
+    ballProjectiles.push(ball);
+}
+
+// Function to launch the ball projectile
+function launchBallProjectile() {
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+    const position = camera.position.clone().add(direction.clone().multiplyScalar(playerRadius + ballRadius));
+    createBallProjectile(position, direction);
+}
+
+// Update ball projectiles in the animate function
+function updateBallProjectiles(delta) {
+    for (let i = ballProjectiles.length - 1; i >= 0; i--) {
+        const ball = ballProjectiles[i];
+        ball.position.add(ball.velocity.clone().multiplyScalar(delta));
+
+        // Remove ball if it goes out of bounds or collides
+        if (ball.position.length() > 1000 || checkCollision(ball.position, ball.velocity)) {
+            scene.remove(ball);
+            ballProjectiles.splice(i, 1);
+        }
+    }
+}
+
+// Call updateBallProjectiles in the animate function
 function animate() {
     requestAnimationFrame(animate);
 
@@ -356,9 +399,10 @@ function animate() {
                 camera.position.add(moveVector);
             }
         }
+
+        // Update ball projectiles
+        updateBallProjectiles(delta);
     }
 
     renderer.render(scene, camera);
 }
-
-
