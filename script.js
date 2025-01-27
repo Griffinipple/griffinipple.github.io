@@ -312,18 +312,20 @@ function updateMovement(delta) {
 }
 
 // Define ball projectile properties
-const ballRadius = 0.5;
+const ballRadius = 0.2; // Smaller size
 const ballSpeed = 50;
+const ballDistanceLimit = 115; // Limit travel distance
 const ballProjectiles = [];
 
 // Function to create a ball projectile
 function createBallProjectile(position, direction) {
     const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
-    const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const ballMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 }); // Gray color
     const ball = new THREE.Mesh(ballGeometry, ballMaterial);
 
     ball.position.copy(position);
     ball.velocity = direction.clone().multiplyScalar(ballSpeed);
+    ball.travelDistance = 0; // Initialize travel distance
     scene.add(ball);
     ballProjectiles.push(ball);
 }
@@ -340,10 +342,12 @@ function launchBallProjectile() {
 function updateBallProjectiles(delta) {
     for (let i = ballProjectiles.length - 1; i >= 0; i--) {
         const ball = ballProjectiles[i];
-        ball.position.add(ball.velocity.clone().multiplyScalar(delta));
+        const travelStep = ball.velocity.clone().multiplyScalar(delta);
+        ball.position.add(travelStep);
+        ball.travelDistance += travelStep.length(); // Accumulate travel distance
 
-        // Remove ball if it goes out of bounds or collides
-        if (ball.position.length() > 1000 || checkCollision(ball.position, ball.velocity)) {
+        // Remove ball if it goes out of bounds or exceeds travel distance limit
+        if (ball.travelDistance > ballDistanceLimit || checkCollision(ball.position, ball.velocity)) {
             scene.remove(ball);
             ballProjectiles.splice(i, 1);
         }
