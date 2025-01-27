@@ -45,14 +45,29 @@ function init() {
     // Create crosshair element
     const crosshair = document.createElement('div');
     crosshair.id = 'crosshair';
+    crosshair.style.position = 'absolute';
+    crosshair.style.width = '20px';
+    crosshair.style.height = '20px';
+    crosshair.style.backgroundColor = 'transparent';
+    crosshair.style.border = '2px solid white';
+    crosshair.style.borderTop = 'none';
+    crosshair.style.borderLeft = 'none';
+    crosshair.style.transform = 'rotate(45deg)';
+    crosshair.style.top = '50%';
+    crosshair.style.left = '50%';
+    crosshair.style.marginTop = '-10px';
+    crosshair.style.marginLeft = '-10px';
     document.body.appendChild(crosshair);
+
+    // Change void color to blue
+    document.body.style.backgroundColor = 'blue';
 
     // Create first spawn area (original)
     createSpawnArea(0, 0);
-    
+
     // Create second spawn area (north)
     createSpawnArea(0, -200);
-    
+
     // Create connecting bridge
     const bridgeGeometry = new THREE.BoxGeometry(60, 1, 120);
     const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
