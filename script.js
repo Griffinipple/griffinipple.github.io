@@ -52,7 +52,7 @@ function init() {
     const bridgeGeometry = new THREE.BoxGeometry(20, 1, 120);
     const bridgeMaterial = new THREE.MeshPhongMaterial({ color: 0x505050 });
     const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
-    bridge.position.set(0, 10, -100);
+    bridge.position.set(0, 9, -100);
     scene.add(bridge);
     objects.push(bridge);
 
@@ -113,16 +113,16 @@ function createSpawnArea(offsetX, offsetZ) {
     objects.push(platform);
 
     // Four ramps
-    const rampLength = 25;
+    const rampLength = 24.2;
     const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
     const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
     // Ramps (adjusted for offset)
     const ramps = [
-        { pos: [0, -20], rot: Math.PI / 7, axis: 'x' },
-        { pos: [0, 20], rot: -Math.PI / 7, axis: 'x' },
-        { pos: [20, 0], rot: Math.PI / 7, axis: 'z' },
-        { pos: [-20, 0], rot: -Math.PI / 7, axis: 'z' }
+        { pos: [0, -20], rot: Math.PI / 6.9, axis: 'x' },
+        { pos: [0, 20], rot: -Math.PI / 6.9, axis: 'x' },
+        { pos: [20, 0], rot: Math.PI / 6.9, axis: 'z' },
+        { pos: [-20, 0], rot: -Math.PI / 6.9, axis: 'z' }
     ];
 
     ramps.forEach(ramp => {
