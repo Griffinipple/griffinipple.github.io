@@ -4,6 +4,19 @@ body {
     background-color: #000;
 }
 
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px; /* Half of width */
+    margin-top: -10px; /* Half of height */
+    border: 1px solid black;
+    background-color: transparent;
+    pointer-events: none; /* This makes sure the crosshair doesn't interfere with mouse events */
+}
+
 #menu {
     position: absolute;
     width: 100%;
