@@ -113,16 +113,16 @@ function createSpawnArea(offsetX, offsetZ) {
     objects.push(platform);
 
     // Four ramps
-    const rampLength = 24.2;
+    const rampLength = 23.8;
     const rampGeometry = new THREE.BoxGeometry(20, 1, rampLength);
     const rampMaterial = new THREE.MeshPhongMaterial({ color: 0x707070 });
 
     // Ramps (adjusted for offset)
     const ramps = [
-        { pos: [0, -20], rot: Math.PI / 6.9, axis: 'x' },
-        { pos: [0, 20], rot: -Math.PI / 6.9, axis: 'x' },
-        { pos: [20, 0], rot: Math.PI / 6.9, axis: 'z' },
-        { pos: [-20, 0], rot: -Math.PI / 6.9, axis: 'z' }
+        { pos: [0, -20], rot: Math.PI / 7.1, axis: 'x' },
+        { pos: [0, 20], rot: -Math.PI / 7.1, axis: 'x' },
+        { pos: [20, 0], rot: Math.PI / 7.1, axis: 'z' },
+        { pos: [-20, 0], rot: -Math.PI / 7.1, axis: 'z' }
     ];
 
     ramps.forEach(ramp => {
